@@ -2,26 +2,35 @@ import { useState } from "react";
 import "./App.css";
 
 function App() {
-  const playersNb = 4;
+  const startPlayersNb = 4;
   const [round, setRound] = useState(1); // numero de la manche
   const [cards, setCards] = useState(null); // cartes en main
   const [dealer, setDealer] = useState(null); // donneur
-  const [bids, setBids] = useState(Array(playersNb).fill(null)); // mises
+  const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises
   const [askBid, setAskBid] = useState(false); // demander mise ?
-  const [cardsPlayed, setCardsPlayed] = useState(Array(playersNb).fill(null)); // cartes jouées
-  const [tricks, setTricks] = useState(Array(playersNb).fill(0)); // plis gagnés
+  const [cardsPlayed, setCardsPlayed] = useState(
+    Array(startPlayersNb).fill(null)
+  ); // cartes jouées
+  const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
   const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
-  const [life, setLife] = useState(Array(playersNb).fill(2)); // vies restantes
+  const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
 
   const otherPlayers = Array.from(
-    { length: playersNb - 1 },
+    { length: startPlayersNb - 1 },
     (_, index) => index + 1
   ); // itérable avec les numéros des bots
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
 
+  let players = life
+    .map((value, index) => (value > 0 ? index : -1))
+    .filter((value) => value >= 0);
+  let playersNb = players.length;
+
   const nextPlayer = (currentPlayer) => {
     return currentPlayer === playersNb - 1 ? 0 : currentPlayer + 1;
   };
+
+  console.log(players);
 
   const distributeCards = () => {
     setCardsPlayed(Array(playersNb).fill(null));
@@ -118,27 +127,24 @@ function App() {
     let theLife = [...life];
     for (let i = 0; i < playersNb; i++) {
       let damage = Math.abs(bids[i] - theTricks[i]);
-      theLife[i] -= damage;
-
-      if (theLife[i] <= 0) {
-        // éliminer le joueur -> comment ?
-        // tableau "éliminés?" avec des booléens ?
-        // si le joueur humain est éliminé, fin de la partie
+      theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
+      if (theLife[players[i]] <= 0) {
         console.log(`${i} est éliminé`);
+        if (i === 0) {
+          console.log("vous avez perdu");
+        }
       }
-      // si seulement JH restant, victoire
-      // cas si tous les joueurs sont morts -> pas de gagnant
     }
     console.log(theLife);
-
     setLife(theLife);
-    distributeCards();
+    if (theLife.filter((item) => item > 0).length === 1) {
+      console.log("vous avez gagné");
+    } else if (theLife.filter((item) => item > 0).length === 0) {
+      console.log("aucun gagnant");
+    } else {
+      distributeCards();
+    }
   };
-
-  // finish round -> remove points accordingly, check if someone is eliminated, check if someone won
-  // if not, start another round (distrib cards, bid and play)
-
-  // eliminate player -> change players nb, be careful not to switch players
 
   return (
     <>
@@ -169,18 +175,26 @@ function App() {
           {otherPlayers.map((player) => (
             <div key={player}>
               <h3>Bot {player}</h3>
-              <div className="scores">
-                <div>Vies : {life && life[player]}</div>
-                <div>Mise : {bids[player] ?? "?"}</div>
-                <div>Plis : {tricks && tricks[player]}</div>
-              </div>
-              <div>
-                {cards[player].map((card) => (
-                  <div className="card" key={card}>
-                    {card}
+              {players.includes(player) ? (
+                <>
+                  <div className="scores">
+                    <div>Vies : {life && life[player]}</div>
+                    <div>Mise : {bids[players.indexOf(player)] ?? "?"}</div>
+                    <div>
+                      Plis : {tricks && tricks[players.indexOf(player)]}
+                    </div>
                   </div>
-                ))}
-              </div>
+                  <div>
+                    {cards[players.indexOf(player)].map((card) => (
+                      <div className="card" key={card}>
+                        {card}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div>Eliminé</div>
+              )}
             </div>
           ))}
           {askBid && (
