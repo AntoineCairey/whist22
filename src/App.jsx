@@ -3,21 +3,21 @@ import "./App.css";
 
 function App() {
   const playersNb = 4;
-  const [round, setRound] = useState(1); // numero du round
-  const [cards, setCards] = useState(null);
-  const [dealer, setDealer] = useState(null);
-  const [bids, setBids] = useState(Array(playersNb).fill(null));
-  const [askBid, setAskBid] = useState(false);
-  const [cardsPlayed, setCardsPlayed] = useState(Array(playersNb).fill(null));
-  const [tricks, setTricks] = useState(Array(playersNb).fill(0));
-  const [firstPlayer, setFirstPlayer] = useState(null);
-  const [life, setLife] = useState(Array(playersNb).fill(5));
+  const [round, setRound] = useState(1); // numero de la manche
+  const [cards, setCards] = useState(null); // cartes en main
+  const [dealer, setDealer] = useState(null); // donneur
+  const [bids, setBids] = useState(Array(playersNb).fill(null)); // mises
+  const [askBid, setAskBid] = useState(false); // demander mise ?
+  const [cardsPlayed, setCardsPlayed] = useState(Array(playersNb).fill(null)); // cartes jouées
+  const [tricks, setTricks] = useState(Array(playersNb).fill(0)); // plis gagnés
+  const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
+  const [life, setLife] = useState(Array(playersNb).fill(2)); // vies restantes
 
   const otherPlayers = Array.from(
     { length: playersNb - 1 },
     (_, index) => index + 1
-  );
-  let cardsNb = 5 - ((round - 1) % 5);
+  ); // itérable avec les numéros des bots
+  let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
 
   const nextPlayer = (currentPlayer) => {
     return currentPlayer === playersNb - 1 ? 0 : currentPlayer + 1;
@@ -85,7 +85,6 @@ function App() {
   };
 
   const finishTrick = (myCard) => {
-    console.log("coucou");
     let theCardsPlayed = [...cardsPlayed];
     theCardsPlayed[0] = myCard;
     cards[0].splice(cards[0].indexOf(myCard), 1);
@@ -103,7 +102,6 @@ function App() {
 
   const determineWinner = (theCardsPlayed) => {
     let winner = theCardsPlayed.indexOf(Math.max(...theCardsPlayed));
-    console.log(winner);
     let theTricks = [...tricks];
     theTricks[winner]++;
     setTricks(theTricks);
@@ -117,10 +115,24 @@ function App() {
   };
 
   const finishRound = (theTricks) => {
+    let theLife = [...life];
     for (let i = 0; i < playersNb; i++) {
-      let damage = Math.abs(bids[i] - theTricks[i])
-      
+      let damage = Math.abs(bids[i] - theTricks[i]);
+      theLife[i] -= damage;
+
+      if (theLife[i] <= 0) {
+        // éliminer le joueur -> comment ?
+        // tableau "éliminés?" avec des booléens ?
+        // si le joueur humain est éliminé, fin de la partie
+        console.log(`${i} est éliminé`);
+      }
+      // si seulement JH restant, victoire
+      // cas si tous les joueurs sont morts -> pas de gagnant
     }
+    console.log(theLife);
+
+    setLife(theLife);
+    distributeCards();
   };
 
   // finish round -> remove points accordingly, check if someone is eliminated, check if someone won
