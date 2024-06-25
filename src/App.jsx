@@ -17,10 +17,17 @@ function App() {
     { length: playersNb - 1 },
     (_, index) => index + 1
   ); // itérable avec les numéros des bots
+
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
+  let alive = life.map((playerLife) => playerLife > 0);
+  let aliveNb = alive.filter((item) => item === true).length;
+  console.log(alive);
 
   const nextPlayer = (currentPlayer) => {
-    return currentPlayer === playersNb - 1 ? 0 : currentPlayer + 1;
+    do {
+      let next = playersNb - 1 ? 0 : currentPlayer + 1;
+    } while (!alive[next]);
+    return next;
   };
 
   const distributeCards = () => {
@@ -33,12 +40,14 @@ function App() {
     let playersCards = [];
     for (let i = 0; i < playersNb; i++) {
       let playerCards = [];
-      for (let j = 0; j < cardsNb; j++) {
-        const index = Math.floor(Math.random() * deck.length);
-        playerCards.push(deck[index]);
-        deck.splice(index, 1);
+      if (alive[i]) {
+        for (let j = 0; j < cardsNb; j++) {
+          const index = Math.floor(Math.random() * deck.length);
+          playerCards.push(deck[index]);
+          deck.splice(index, 1);
+        }
+        playerCards.sort((a, b) => a - b);
       }
-      playerCards.sort((a, b) => a - b);
       playersCards.push(playerCards);
     }
     setCards(playersCards);
