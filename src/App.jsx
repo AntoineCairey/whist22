@@ -5,7 +5,9 @@ function App() {
   const startPlayersNb = 4;
   const [round, setRound] = useState(1); // numero de la manche
   const [cards, setCards] = useState(null); // cartes en main
-  const [dealer, setDealer] = useState(null); // donneur
+  const [dealer, setDealer] = useState(
+    Math.floor(Math.random() * startPlayersNb)
+  ); // donneur
   const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises
   const [askBid, setAskBid] = useState(false); // demander mise ?
   const [cardsPlayed, setCardsPlayed] = useState(
@@ -30,19 +32,15 @@ function App() {
     return currentPlayer === playersNb - 1 ? 0 : currentPlayer + 1;
   };
 
-  console.log(players);
-
-  const distributeCards = () => {
+  const distributeCards = (theDealer, theCardsNb) => {
     setCardsPlayed(Array(playersNb).fill(null));
     setTricks(Array(playersNb).fill(0));
-    const theDealer = Math.floor(Math.random() * playersNb);
-    setDealer(theDealer);
     setFirstPlayer(nextPlayer(theDealer));
     const deck = Array.from({ length: 22 }, (_, index) => index + 1);
     let playersCards = [];
     for (let i = 0; i < playersNb; i++) {
       let playerCards = [];
-      for (let j = 0; j < cardsNb; j++) {
+      for (let j = 0; j < theCardsNb; j++) {
         const index = Math.floor(Math.random() * deck.length);
         playerCards.push(deck[index]);
         deck.splice(index, 1);
@@ -125,10 +123,11 @@ function App() {
 
   const finishRound = (theTricks) => {
     let theLife = [...life];
+    console.log(theLife);
     for (let i = 0; i < playersNb; i++) {
       let damage = Math.abs(bids[i] - theTricks[i]);
       theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
-      if (theLife[players[i]] <= 0) {
+      if (theLife[players[i]] === 0) {
         console.log(`${i} est éliminé`);
         if (i === 0) {
           console.log("vous avez perdu");
@@ -142,20 +141,29 @@ function App() {
     } else if (theLife.filter((item) => item > 0).length === 0) {
       console.log("aucun gagnant");
     } else {
-      distributeCards();
+      let next = dealer;
+      do {
+        next = dealer === startPlayersNb - 1 ? 0 : dealer + 1;
+      } while (theLife[next] === 0);
+      setDealer(next);
+      setRound(round + 1);
+      let theCardsNb = 5 - (round % 5);
+      distributeCards(next, theCardsNb);
     }
   };
 
   return (
     <>
       <h1>Tarot Africain</h1>
-      <button onClick={distributeCards}>Nouvelle partie</button>
+      <button onClick={() => distributeCards(dealer, cardsNb)}>
+        Nouvelle partie
+      </button>
       <br />
       <br />
       {cards && (
         <>
           <div>Donneur : {dealer}</div>
-          <h3>Vous</h3>
+          <h3>Vous {dealer === 0 && "(D)"}</h3>
           <div className="scores">
             <div>Vies : {life && life[0]}</div>
             <div>Mise : {bids[0] ?? "?"}</div>
@@ -174,7 +182,9 @@ function App() {
           </div>
           {otherPlayers.map((player) => (
             <div key={player}>
-              <h3>Bot {player}</h3>
+              <h3>
+                Bot {player} {dealer === player && "(D)"}
+              </h3>
               {players.includes(player) ? (
                 <>
                   <div className="scores">
@@ -200,7 +210,7 @@ function App() {
           {askBid && (
             <div>
               <h3>Votre mise ?</h3>
-              {Array.from({ length: 6 }, (_, index) => (
+              {Array.from({ length: cardsNb + 1 }, (_, index) => (
                 <button key={index} onClick={() => finishBids(index)}>
                   {index}
                 </button>
