@@ -16,11 +16,18 @@ function App() {
   const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
   const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
   const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(0);
   const [player, setPlayer] = useState(null);
 
   useEffect(() => {
-    if (!loading || player === 0) {
+    console.log("loading " + loading);
+    console.log("player " + player);
+    if (loading === 0 || (loading === 1 && player === 0)) {
+      return;
+    }
+    if (loading === 2 && player === firstPlayer) {
+      console.log("coucou");
+      determineWinner(cardsPlayed);
       return;
     }
     const id = setInterval(() => {
@@ -31,7 +38,7 @@ function App() {
       cards[player].splice(cardIndex, 1);
       setCardsPlayed(theCardsPlayed);
       setPlayer((p) => nextPlayer(p));
-    }, 3000);
+    }, 2000);
     return () => {
       clearInterval(id);
     };
@@ -100,11 +107,11 @@ function App() {
   const startTrick = (theFirstPlayer) => {
     setCardsPlayed(Array(playersNb).fill(null));
     setFirstPlayer(theFirstPlayer);
-    let player = theFirstPlayer;
-    let theCardsPlayed = Array(playersNb).fill(null);
+    // let player = theFirstPlayer;
+    // let theCardsPlayed = Array(playersNb).fill(null);
 
-    setPlayer(firstPlayer);
-    setLoading(true);
+    setPlayer(theFirstPlayer);
+    setLoading(1);
 
     /* while (player !== 0) {
       // faire une vraie fonction chooseCard
@@ -119,10 +126,11 @@ function App() {
   const finishTrick = (myCard) => {
     let theCardsPlayed = [...cardsPlayed];
     theCardsPlayed[0] = myCard;
-    //setCardsPlayed(theCardsPlayed)
+    setCardsPlayed(theCardsPlayed);
     cards[0].splice(cards[0].indexOf(myCard), 1);
-    let player = 1;
-    while (player !== firstPlayer) {
+    setPlayer(1);
+    setLoading(2);
+    /* while (player !== firstPlayer) {
       // faire une vraie fonction chooseCard
       const cardIndex = Math.floor(Math.random() * cards[player].length);
       theCardsPlayed[player] = cards[player][cardIndex];
@@ -130,10 +138,11 @@ function App() {
       player = nextPlayer(player);
     }
     setCardsPlayed(theCardsPlayed);
-    determineWinner(theCardsPlayed);
+    determineWinner(theCardsPlayed); */
   };
 
   const determineWinner = (theCardsPlayed) => {
+    console.log("coucou2");
     let winner = theCardsPlayed.indexOf(Math.max(...theCardsPlayed));
     let theTricks = [...tricks];
     theTricks[winner]++;
