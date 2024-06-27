@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
@@ -16,6 +16,26 @@ function App() {
   const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
   const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
   const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
+  const [loading, setLoading] = useState(false);
+  const [player, setPlayer] = useState(null);
+
+  useEffect(() => {
+    if (!loading || player === 0) {
+      return;
+    }
+    const id = setInterval(() => {
+      console.log("test" + player);
+      let theCardsPlayed = [...cardsPlayed];
+      const cardIndex = Math.floor(Math.random() * cards[player].length);
+      theCardsPlayed[player] = cards[player][cardIndex];
+      cards[player].splice(cardIndex, 1);
+      setCardsPlayed(theCardsPlayed);
+      setPlayer((p) => nextPlayer(p));
+    }, 3000);
+    return () => {
+      clearInterval(id);
+    };
+  }, [loading, player]);
 
   const otherPlayers = Array.from(
     { length: startPlayersNb - 1 },
@@ -78,29 +98,35 @@ function App() {
   };
 
   const startTrick = (theFirstPlayer) => {
+    setCardsPlayed(Array(playersNb).fill(null));
     setFirstPlayer(theFirstPlayer);
     let player = theFirstPlayer;
     let theCardsPlayed = Array(playersNb).fill(null);
-    while (player !== 0) {
+
+    setPlayer(firstPlayer);
+    setLoading(true);
+
+    /* while (player !== 0) {
       // faire une vraie fonction chooseCard
       const cardIndex = Math.floor(Math.random() * cards[player].length);
       theCardsPlayed[player] = cards[player][cardIndex];
       cards[player].splice(cardIndex, 1); // je modifie un state sans passer par set..., c'est dangereux ?
       player = nextPlayer(player);
     }
-    setCardsPlayed(theCardsPlayed);
+    setCardsPlayed(theCardsPlayed); */
   };
 
   const finishTrick = (myCard) => {
     let theCardsPlayed = [...cardsPlayed];
     theCardsPlayed[0] = myCard;
+    //setCardsPlayed(theCardsPlayed)
     cards[0].splice(cards[0].indexOf(myCard), 1);
     let player = 1;
     while (player !== firstPlayer) {
       // faire une vraie fonction chooseCard
       const cardIndex = Math.floor(Math.random() * cards[player].length);
       theCardsPlayed[player] = cards[player][cardIndex];
-      cards[player].splice(cardIndex, 1); // je modifie un state sans passer par set..., c'est dangereux ?
+      cards[player].splice(cardIndex, 1);
       player = nextPlayer(player);
     }
     setCardsPlayed(theCardsPlayed);
