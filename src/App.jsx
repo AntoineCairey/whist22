@@ -17,8 +17,12 @@ function App() {
   const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
   const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
   const [loading, setLoading] = useState(0);
-  const [player, setPlayer] = useState(null);
+  //statut du pli (0 = avant le 1er pli, 1 = avant que le PJ joue, 2 = après que le PJ ait joué)
+  const [player, setPlayer] = useState(null); //joueur actuel
 
+  // fonction qui s'exécute à chaque tour (chaque fois que player change)
+  // fait jouer une nouvelle carte au bot dont c'est le tour puis passe au suivant
+  // si fin de pli, détermine le gagnant
   useEffect(() => {
     console.log("loading " + loading);
     console.log("player " + player);
@@ -32,11 +36,15 @@ function App() {
     }
     const id = setInterval(() => {
       console.log("test" + player);
-      let theCardsPlayed = [...cardsPlayed];
       const cardIndex = Math.floor(Math.random() * cards[player].length);
-      theCardsPlayed[player] = cards[player][cardIndex];
-      cards[player].splice(cardIndex, 1);
-      setCardsPlayed(theCardsPlayed);
+      let newCardsPlayed = [...cardsPlayed];
+      newCardsPlayed[player] = cards[player][cardIndex];
+      setCardsPlayed(newCardsPlayed);
+      // cards[player].splice(cardIndex, 1);
+      let newCards = [...cards];
+      newCards[player] = [...newCards[player]];
+      newCards[player].splice(cardIndex, 1);
+      setCards(newCards);
       setPlayer((p) => nextPlayer(p));
     }, 2000);
     return () => {
@@ -52,11 +60,19 @@ function App() {
 
   let players = life
     .map((value, index) => (value > 0 ? index : -1))
-    .filter((value) => value >= 0);
-  let playersNb = players.length;
+    .filter((value) => value >= 0); // liste des joueurs en vie
+  let playersNb = players.length; // nombre de joueurs en vie
 
   const nextPlayer = (currentPlayer) => {
     return currentPlayer === playersNb - 1 ? 0 : currentPlayer + 1;
+  };
+
+  const startGame = () => {
+    setLife(Array(startPlayersNb).fill(2));
+    let newDealer = Math.floor(Math.random() * startPlayersNb);
+    setDealer(newDealer);
+    setRound(1);
+    distributeCards(newDealer, 5);
   };
 
   const distributeCards = (theDealer, theCardsNb) => {
@@ -107,38 +123,23 @@ function App() {
   const startTrick = (theFirstPlayer) => {
     setCardsPlayed(Array(playersNb).fill(null));
     setFirstPlayer(theFirstPlayer);
-    // let player = theFirstPlayer;
-    // let theCardsPlayed = Array(playersNb).fill(null);
-
     setPlayer(theFirstPlayer);
     setLoading(1);
-
-    /* while (player !== 0) {
-      // faire une vraie fonction chooseCard
-      const cardIndex = Math.floor(Math.random() * cards[player].length);
-      theCardsPlayed[player] = cards[player][cardIndex];
-      cards[player].splice(cardIndex, 1); // je modifie un state sans passer par set..., c'est dangereux ?
-      player = nextPlayer(player);
-    }
-    setCardsPlayed(theCardsPlayed); */
   };
 
   const finishTrick = (myCard) => {
     let theCardsPlayed = [...cardsPlayed];
     theCardsPlayed[0] = myCard;
     setCardsPlayed(theCardsPlayed);
-    cards[0].splice(cards[0].indexOf(myCard), 1);
+
+    //cards[0].splice(cards[0].indexOf(myCard), 1);
+    let newCards = [...cards];
+    newCards[0] = [...newCards[0]];
+    newCards[0].splice(cards[0].indexOf(myCard), 1);
+    setCards(newCards);
+
     setPlayer(1);
     setLoading(2);
-    /* while (player !== firstPlayer) {
-      // faire une vraie fonction chooseCard
-      const cardIndex = Math.floor(Math.random() * cards[player].length);
-      theCardsPlayed[player] = cards[player][cardIndex];
-      cards[player].splice(cardIndex, 1);
-      player = nextPlayer(player);
-    }
-    setCardsPlayed(theCardsPlayed);
-    determineWinner(theCardsPlayed); */
   };
 
   const determineWinner = (theCardsPlayed) => {
@@ -190,14 +191,13 @@ function App() {
   return (
     <>
       <h1>Tarot Africain</h1>
-      <button onClick={() => distributeCards(dealer, cardsNb)}>
-        Nouvelle partie
-      </button>
+      <button onClick={startGame}>Nouvelle partie</button>
       <br />
       <br />
       {cards && (
         <>
           <div>Donneur : {dealer}</div>
+          <div>Au tour de : {player}</div>
           <h3>Vous {dealer === 0 && "(D)"}</h3>
           <div className="scores">
             <div>Vies : {life && life[0]}</div>
