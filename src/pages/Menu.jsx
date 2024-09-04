@@ -1,6 +1,6 @@
 import { useNavigate, useOutletContext } from "react-router-dom";
 
-function Menu() {
+export default function Menu() {
   const navigate = useNavigate();
   const { setScore } = useOutletContext();
 
@@ -47,5 +47,3 @@ function Menu() {
     </>
   );
 }
-
-export default Menu;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Card from "../components/Card";
 
-function Game() {
+export default function Game() {
   const navigate = useNavigate();
   const startPlayersNb = 4;
   const [round, setRound] = useState(1); // numero de la manche
@@ -218,6 +219,12 @@ function Game() {
                 {card}
               </button>
             ))}
+            <Card
+              isVisible={true}
+              isClickable={true}
+              value={23}
+              handleCardClick={finishTrick}
+            />
           </div>
           {otherPlayers.map((player) => (
             <div key={player}>
@@ -269,5 +276,3 @@ function Game() {
     </>
   );
 }
-
-export default Game;

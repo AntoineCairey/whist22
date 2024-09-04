@@ -1,6 +1,6 @@
 import { useNavigate, useOutletContext } from "react-router-dom";
 
-function Score() {
+export default function Score() {
   const navigate = useNavigate();
   const { score } = useOutletContext();
 
@@ -29,4 +29,3 @@ function Score() {
     )
   );
 }
-export default Score;
