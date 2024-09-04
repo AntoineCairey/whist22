@@ -219,12 +219,13 @@ export default function Game() {
                 {card}
               </button>
             ))}
+            {/* Nouveau composant Card
             <Card
               isVisible={true}
               isClickable={true}
               value={23}
               handleCardClick={finishTrick}
-            />
+            /> */}
           </div>
           {otherPlayers.map((player) => (
             <div key={player}>
