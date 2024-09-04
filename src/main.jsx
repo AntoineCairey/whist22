@@ -2,12 +2,29 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.jsx";
+import Game from "./pages/Game.jsx";
+import Menu from "./pages/Menu.jsx";
+import Score from "./pages/Score.jsx";
 import "./index.css";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    children: [
+      {
+        path: "/",
+        element: <Menu />,
+      },
+      {
+        path: "/game",
+        element: <Game />,
+      },
+      {
+        path: "/score",
+        element: <Score />,
+      },
+    ],
   },
 ]);
 
