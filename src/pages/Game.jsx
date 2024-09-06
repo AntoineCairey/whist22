@@ -1,26 +1,46 @@
 import { useState, useEffect } from "react";
+import { useImmer } from "use-immer";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
+import { produce } from "immer";
 
 export default function Game() {
   const navigate = useNavigate();
   const startPlayersNb = 4;
-  const [round, setRound] = useState(1); // numero de la manche
-  const [cards, setCards] = useState(null); // cartes en main
-  const [dealer, setDealer] = useState(
-    Math.floor(Math.random() * startPlayersNb)
-  ); // donneur
-  const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises
-  const [askBid, setAskBid] = useState(false); // demander mise ?
-  const [cardsPlayed, setCardsPlayed] = useState(
+
+  const playerStatus = {
+    id: 0,
+    name: "Vous",
+    life: null,
+    bid: null,
+    tricks: null,
+    cards: [],
+    elimTurn: null,
+  };
+  const names = ["Vous", "Bot 1", "Bot 2", "Bot 3"];
+  const startStatus = names.map((n, index) => ({
+    ...playerStatus,
+    id: index,
+    name: n,
+  }));
+
+  const [status, setStatus] = useImmer(startStatus); // statut joueurs
+  const [cardsPlayed, setCardsPlayed] = useImmer(
     Array(startPlayersNb).fill(null)
   ); // cartes jouées
-  const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
+
+  const [round, setRound] = useState(1); // numero de la manche
+  const [dealer, setDealer] = useState(null); // donneur
+  const [askBid, setAskBid] = useState(false); // demander mise ?
   const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
-  const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
   const [loading, setLoading] = useState(0);
   //statut du pli (0 = avant le 1er pli, 1 = avant que le PJ joue, 2 = après que le PJ ait joué)
   const [player, setPlayer] = useState(null); //joueur actuel
+
+  //const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises 💀
+  //const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés 💀
+  const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes 💀
+  const [cards, setCards] = useState(null); // cartes en main 💀
 
   // fonction qui s'exécute à chaque tour (chaque fois que player change)
   // fait jouer une nouvelle carte au bot dont c'est le tour puis passe au suivant
@@ -39,9 +59,13 @@ export default function Game() {
     const id = setInterval(() => {
       console.log("test" + player);
       const cardIndex = Math.floor(Math.random() * cards[player].length);
-      let newCardsPlayed = [...cardsPlayed];
+      setCardsPlayed((draft) => {
+        draft[player] = cards[player][cardIndex];
+      });
+
+      /* let newCardsPlayed = [...cardsPlayed];
       newCardsPlayed[player] = cards[player][cardIndex];
-      setCardsPlayed(newCardsPlayed);
+      setCardsPlayed(newCardsPlayed); */
       // cards[player].splice(cardIndex, 1);
       let newCards = [...cards];
       newCards[player] = [...newCards[player]];
@@ -60,9 +84,12 @@ export default function Game() {
   ); // itérable avec les numéros des bots
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
 
-  let players = life
+  let players = status
+    .filter((player) => player.life > 0)
+    .map((player) => player.id); // liste des joueurs en vie
+  /* let players = life
     .map((value, index) => (value > 0 ? index : -1))
-    .filter((value) => value >= 0); // liste des joueurs en vie
+    .filter((value) => value >= 0); */
   let playersNb = players.length; // nombre de joueurs en vie
 
   const nextPlayer = (currentPlayer) => {
@@ -70,7 +97,12 @@ export default function Game() {
   };
 
   const startGame = () => {
-    setLife(Array(startPlayersNb).fill(2));
+    console.log("startGame");
+    setStatus((draft) => {
+      draft.forEach((p) => {
+        p.life = 3;
+      });
+    });
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
     setRound(1);
@@ -82,7 +114,12 @@ export default function Game() {
 
   const distributeCards = (theDealer, theCardsNb) => {
     setCardsPlayed(Array(playersNb).fill(null));
-    setTricks(Array(playersNb).fill(0));
+    setStatus((draft) => {
+      draft.forEach((p) => {
+        p.tricks = 0;
+      });
+    });
+    //setTricks(Array(playersNb).fill(0));
     setFirstPlayer(nextPlayer(theDealer));
     const deck = Array.from({ length: 22 }, (_, index) => index + 1);
     let playersCards = [];
@@ -101,27 +138,35 @@ export default function Game() {
   };
 
   const startBids = (theFirstPlayer) => {
+    console.log("startBids");
+    console.log("dealer : " + dealer);
     let bidder = theFirstPlayer;
-    let theBids = Array(playersNb).fill(null);
     while (bidder !== 0) {
-      theBids[bidder] = Math.floor(Math.random() * 3);
+      console.log("bidder : " + bidder);
+      const theBidder = bidder;
+      setStatus((draft) => {
+        draft[theBidder].bid = Math.floor(Math.random() * 3);
+      });
       bidder = nextPlayer(bidder);
     }
-    setBids(theBids);
     setAskBid(true);
   };
 
   const finishBids = (myBid) => {
+    console.log("finishBids");
     setAskBid(false);
-    let theBids = [...bids];
-    theBids[0] = myBid;
+    setStatus((draft) => {
+      draft[0].bid = myBid;
+    });
     let bidder = 1;
     while (bidder !== firstPlayer) {
+      const theBidder = bidder;
       // faire une vraie fonction chooseBid
-      theBids[bidder] = Math.floor(Math.random() * 3);
+      setStatus((draft) => {
+        draft[theBidder].bid = Math.floor(Math.random() * 3);
+      });
       bidder = nextPlayer(bidder);
     }
-    setBids(theBids);
     startTrick(firstPlayer);
   };
 
@@ -133,9 +178,12 @@ export default function Game() {
   };
 
   const finishTrick = (myCard) => {
-    let theCardsPlayed = [...cardsPlayed];
+    setCardsPlayed((draft) => {
+      draft[0] = myCard;
+    });
+    /* let theCardsPlayed = [...cardsPlayed];
     theCardsPlayed[0] = myCard;
-    setCardsPlayed(theCardsPlayed);
+    setCardsPlayed(theCardsPlayed); */
 
     //cards[0].splice(cards[0].indexOf(myCard), 1);
     let newCards = [...cards];
@@ -150,33 +198,43 @@ export default function Game() {
   const determineWinner = (theCardsPlayed) => {
     console.log("coucou2");
     let winner = theCardsPlayed.indexOf(Math.max(...theCardsPlayed));
-    let theTricks = [...tricks];
+    const newStatus = produce((draft) => {
+      draft[winner].tricks++;
+    });
+    setStatus(newStatus);
+    /* let theTricks = [...tricks];
     theTricks[winner]++;
-    setTricks(theTricks);
+    setTricks(theTricks); */
     setTimeout(() => {
       if (cards[0].length === 0) {
-        finishRound(theTricks);
+        finishRound(newStatus);
       } else {
         startTrick(winner);
       }
     }, 3000);
   };
 
-  const finishRound = (theTricks) => {
-    let theLife = [...life];
-    console.log(theLife);
+  const finishRound = (newStatus) => {
+    /* let theLife = [...life];
+    console.log(theLife); */
     for (let i = 0; i < playersNb; i++) {
-      let damage = Math.abs(bids[i] - theTricks[i]);
-      theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
-      if (theLife[players[i]] === 0) {
+      const damage = Math.abs(status[i].bid - newStatus[i].tricks);
+      const newLife = Math.max(status[i].life - damage, 0);
+      setStatus((draft) => {
+        draft[i].life = newLife;
+      });
+      //theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
+      if (newLife === 0) {
         console.log(`${i} est éliminé`);
         if (i === 0) {
           console.log("vous avez perdu");
         }
       }
     }
-    console.log(theLife);
-    setLife(theLife);
+    //console.log(theLife);
+    //setLife(theLife);
+
+    /////////////// CONTINUER MODIF LIFE ICI
     if (theLife.filter((item) => item > 0).length === 1) {
       console.log("vous avez gagné");
     } else if (theLife.filter((item) => item > 0).length === 0) {
@@ -193,6 +251,9 @@ export default function Game() {
     }
   };
 
+  console.log("Dealer : " + dealer);
+  //console.log(status[0].bid);
+
   return (
     <>
       <button onClick={() => navigate("/")}>Revenir au Menu</button>
@@ -206,8 +267,8 @@ export default function Game() {
           <h3>Vous {dealer === 0 && "(D)"}</h3>
           <div className="scores">
             <div>Vies : {life && life[0]}</div>
-            <div>Mise : {bids[0] ?? "?"}</div>
-            <div>Plis : {tricks && tricks[0]}</div>
+            <div>Mise : {status[0].bid ?? "?"}</div>
+            <div>Plis : {status[0].tricks}</div>
           </div>
           <div>
             {cards[0].map((card) => (
@@ -227,22 +288,20 @@ export default function Game() {
               handleCardClick={finishTrick}
             /> */}
           </div>
-          {otherPlayers.map((player) => (
-            <div key={player}>
+          {status.slice(1).map((player) => (
+            <div key={player.id}>
               <h3>
-                Bot {player} {dealer === player && "(D)"}
+                {player.name} {dealer === player.id && "(D)"}
               </h3>
-              {players.includes(player) ? (
+              {players.includes(player.id) ? (
                 <>
                   <div className="scores">
-                    <div>Vies : {life && life[player]}</div>
-                    <div>Mise : {bids[players.indexOf(player)] ?? "?"}</div>
-                    <div>
-                      Plis : {tricks && tricks[players.indexOf(player)]}
-                    </div>
+                    <div>Vies : {life && life[player.id]}</div>
+                    <div>Mise : {player.bid ?? "?"}</div>
+                    <div>Plis : {player.tricks}</div>
                   </div>
                   <div>
-                    {cards[players.indexOf(player)].map((card) => (
+                    {cards[players.indexOf(player.id)].map((card) => (
                       <div className="card" key={card}>
                         {card}
                       </div>
