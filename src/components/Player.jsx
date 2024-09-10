@@ -1,14 +1,46 @@
-export default function Player() {
-  let playerStatus = {
-    id: 0,
-    name: "Vous",
-    life: 3,
-    bid: 2,
-    tricks: 1,
-    cards: [6, 9, 12],
-    elimTurn: null,
-    //cardPlayed: 7,
-  };
+import Card from "./Card";
 
-  return <div>player</div>;
+export default function Player({ id, gameData, handleCardClick }) {
+  console.log(gameData);
+  const {
+    names,
+    players,
+    dealer,
+    player,
+    life,
+    bids,
+    tricks,
+    cards,
+    elimTurn,
+  } = gameData;
+
+  return (
+    <div>
+      <h3 className={players[player] === id ? "active-player" : ""}>
+        {names[id]} {dealer === id && "(D)"}
+      </h3>
+      {players.includes(id) ? (
+        <>
+          <div className="scores">
+            <div>Vies : {life && life[id]}</div>
+            <div>Mise : {bids[players.indexOf(id)] ?? "?"}</div>
+            <div>Plis : {tricks && tricks[players.indexOf(id)]}</div>
+          </div>
+          <div>
+            {cards[players.indexOf(id)].map((card) => (
+              <Card
+                key={card}
+                isVisible={true}
+                isClickable={true}
+                value={card}
+                handleCardClick={handleCardClick}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div>Eliminé tour {elimTurn[id]}</div>
+      )}
+    </div>
+  );
 }

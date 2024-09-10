@@ -1,26 +1,50 @@
 import { useState, useEffect } from "react";
+import { useImmer } from "use-immer";
 import { useNavigate } from "react-router-dom";
-import Card from "../components/Card";
+import Player from "../components/Player";
 
 export default function Game() {
   const navigate = useNavigate();
   const startPlayersNb = 4;
+  const startPlayers = [0, 1, 2, 3];
+  const names = ["Vous", "Bot 1", "Bot 2", "Bot 3"];
+
   const [round, setRound] = useState(1); // numero de la manche
-  const [cards, setCards] = useState(null); // cartes en main
   const [dealer, setDealer] = useState(
     Math.floor(Math.random() * startPlayersNb)
   ); // donneur
-  const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises
   const [askBid, setAskBid] = useState(false); // demander mise ?
   const [cardsPlayed, setCardsPlayed] = useState(
     Array(startPlayersNb).fill(null)
   ); // cartes jouées
-  const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
   const [firstPlayer, setFirstPlayer] = useState(null); // 1er joueur du pli
-  const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
+  const [player, setPlayer] = useState(null); //joueur actuel
   const [loading, setLoading] = useState(0);
   //statut du pli (0 = avant le 1er pli, 1 = avant que le PJ joue, 2 = après que le PJ ait joué)
-  const [player, setPlayer] = useState(null); //joueur actuel
+
+  const [life, setLife] = useState(Array(startPlayersNb).fill(2)); // vies restantes
+  const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises
+  const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
+  const [cards, setCards] = useState(null); // cartes en main
+  const [elimTurn, setElimTurn] = useImmer(Array(startPlayersNb).fill(null)); // tour élimination
+
+  let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
+  let players = life
+    .map((value, index) => (value > 0 ? index : -1))
+    .filter((value) => value >= 0); // liste des joueurs en vie
+  let playersNb = players.length; // nombre de joueurs en vie
+
+  const gameData = {
+    names,
+    players,
+    dealer,
+    player,
+    life,
+    bids,
+    tricks,
+    cards,
+    elimTurn,
+  };
 
   // fonction qui s'exécute à chaque tour (chaque fois que player change)
   // fait jouer une nouvelle carte au bot dont c'est le tour puis passe au suivant
@@ -54,19 +78,8 @@ export default function Game() {
     };
   }, [loading, player]);
 
-  const otherPlayers = Array.from(
-    { length: startPlayersNb - 1 },
-    (_, index) => index + 1
-  ); // itérable avec les numéros des bots
-  let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
-
-  let players = life
-    .map((value, index) => (value > 0 ? index : -1))
-    .filter((value) => value >= 0); // liste des joueurs en vie
-  let playersNb = players.length; // nombre de joueurs en vie
-
   const nextPlayer = (currentPlayer) => {
-    return currentPlayer === playersNb - 1 ? 0 : currentPlayer + 1;
+    return currentPlayer >= playersNb - 1 ? 0 : currentPlayer + 1;
   };
 
   const startGame = () => {
@@ -169,7 +182,10 @@ export default function Game() {
       let damage = Math.abs(bids[i] - theTricks[i]);
       theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
       if (theLife[players[i]] === 0) {
-        console.log(`${i} est éliminé`);
+        setElimTurn((draft) => {
+          draft[players[i]] = round;
+        });
+        console.log(`${players[i]} est éliminé`);
         if (i === 0) {
           console.log("vous avez perdu");
         }
@@ -184,7 +200,8 @@ export default function Game() {
     } else {
       let next = dealer;
       do {
-        next = dealer === startPlayersNb - 1 ? 0 : dealer + 1;
+        next = dealer === startPlayersNb - 1 ? 0 : next + 1;
+        console.log("next : " + next);
       } while (theLife[next] === 0);
       setDealer(next);
       setRound(round + 1);
@@ -203,7 +220,9 @@ export default function Game() {
         <>
           <div>Donneur : {dealer}</div>
           <div>Au tour de : {player}</div>
-          <h3>Vous {dealer === 0 && "(D)"}</h3>
+          <h3 className={player === 0 ? "active-player" : ""}>
+            Vous {dealer === 0 && "(D)"}
+          </h3>
           <div className="scores">
             <div>Vies : {life && life[0]}</div>
             <div>Mise : {bids[0] ?? "?"}</div>
@@ -219,41 +238,16 @@ export default function Game() {
                 {card}
               </button>
             ))}
-            {/* Nouveau composant Card
-            <Card
-              isVisible={true}
-              isClickable={true}
-              value={23}
-              handleCardClick={finishTrick}
-            /> */}
           </div>
-          {otherPlayers.map((player) => (
-            <div key={player}>
-              <h3>
-                Bot {player} {dealer === player && "(D)"}
-              </h3>
-              {players.includes(player) ? (
-                <>
-                  <div className="scores">
-                    <div>Vies : {life && life[player]}</div>
-                    <div>Mise : {bids[players.indexOf(player)] ?? "?"}</div>
-                    <div>
-                      Plis : {tricks && tricks[players.indexOf(player)]}
-                    </div>
-                  </div>
-                  <div>
-                    {cards[players.indexOf(player)].map((card) => (
-                      <div className="card" key={card}>
-                        {card}
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div>Eliminé</div>
-              )}
-            </div>
+          {startPlayers.slice(1).map((player) => (
+            <Player
+              key={player}
+              id={player}
+              gameData={gameData}
+              handleCardClick={finishTrick}
+            />
           ))}
+
           {askBid && (
             <div>
               <h3>Votre mise ?</h3>
