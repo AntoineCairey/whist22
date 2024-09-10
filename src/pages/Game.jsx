@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useImmer } from "use-immer";
 import { useNavigate } from "react-router-dom";
 import Player from "../components/Player";
+import Card from "../components/Card";
 
 export default function Game() {
   const navigate = useNavigate();
@@ -220,26 +221,8 @@ export default function Game() {
         <>
           <div>Donneur : {dealer}</div>
           <div>Au tour de : {player}</div>
-          <h3 className={player === 0 ? "active-player" : ""}>
-            Vous {dealer === 0 && "(D)"}
-          </h3>
-          <div className="scores">
-            <div>Vies : {life && life[0]}</div>
-            <div>Mise : {bids[0] ?? "?"}</div>
-            <div>Plis : {tricks && tricks[0]}</div>
-          </div>
-          <div>
-            {cards[0].map((card) => (
-              <button
-                className="card"
-                key={card}
-                onClick={() => finishTrick(card)}
-              >
-                {card}
-              </button>
-            ))}
-          </div>
-          {startPlayers.slice(1).map((player) => (
+          {/* <Player id={0} gameData={gameData} handleCardClick={finishTrick} /> */}
+          {startPlayers.map((player) => (
             <Player
               key={player}
               id={player}
@@ -261,9 +244,12 @@ export default function Game() {
           <h3>Cartes jouées</h3>
           <div>
             {cardsPlayed.map((card, index) => (
-              <div className="card" key={index}>
-                {card ?? "?"}
-              </div>
+              <Card
+                key={index}
+                isVisible={!!card}
+                isClickable={false}
+                value={card}
+              />
             ))}
           </div>
         </>

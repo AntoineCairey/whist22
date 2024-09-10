@@ -31,7 +31,7 @@ export default function Player({ id, gameData, handleCardClick }) {
               <Card
                 key={card}
                 isVisible={true}
-                isClickable={true}
+                isClickable={id === 0 && player === 0}
                 value={card}
                 handleCardClick={handleCardClick}
               />
