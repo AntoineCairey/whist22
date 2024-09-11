@@ -1,7 +1,7 @@
 import Card from "./Card";
 
 export default function Player({ id, gameData, handleCardClick }) {
-  console.log(gameData);
+  //console.log(gameData);
   const {
     names,
     players,

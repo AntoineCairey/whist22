@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useImmer } from "use-immer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import Player from "../components/Player";
 import Card from "../components/Card";
 
@@ -9,6 +9,7 @@ export default function Game() {
   const startPlayersNb = 4;
   const startPlayers = [0, 1, 2, 3];
   const names = ["Vous", "Bot 1", "Bot 2", "Bot 3"];
+  const { setScore } = useOutletContext();
 
   const [round, setRound] = useState(1); // numero de la manche
   const [dealer, setDealer] = useState(
@@ -27,7 +28,7 @@ export default function Game() {
   const [bids, setBids] = useState(Array(startPlayersNb).fill(null)); // mises
   const [tricks, setTricks] = useState(Array(startPlayersNb).fill(0)); // plis gagnés
   const [cards, setCards] = useState(null); // cartes en main
-  const [elimTurn, setElimTurn] = useImmer(Array(startPlayersNb).fill(null)); // tour élimination
+  const [elimTurn, setElimTurn] = useState(Array(startPlayersNb).fill(null)); // tour élimination
 
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
   let players = life
@@ -51,19 +52,16 @@ export default function Game() {
   // fait jouer une nouvelle carte au bot dont c'est le tour puis passe au suivant
   // si fin de pli, détermine le gagnant
   useEffect(() => {
-    console.log("loading " + loading);
-    console.log("player " + player);
     if (loading === 0 || (loading === 1 && player === 0)) {
       return;
     }
     if (loading === 2 && player === firstPlayer) {
-      console.log("coucou");
       determineWinner(cardsPlayed);
       return;
     }
     const id = setInterval(() => {
-      console.log("test" + player);
       const cardIndex = Math.floor(Math.random() * cards[player].length);
+      console.log(`${names[player]} joue ${cards[player][cardIndex]}`);
       let newCardsPlayed = [...cardsPlayed];
       newCardsPlayed[player] = cards[player][cardIndex];
       setCardsPlayed(newCardsPlayed);
@@ -95,6 +93,7 @@ export default function Game() {
   useEffect(startGame, []);
 
   const distributeCards = (theDealer, theCardsNb) => {
+    console.log(`Distribution : ${theCardsNb} cartes par personne`);
     setCardsPlayed(Array(playersNb).fill(null));
     setTricks(Array(playersNb).fill(0));
     setFirstPlayer(nextPlayer(theDealer));
@@ -147,6 +146,7 @@ export default function Game() {
   };
 
   const finishTrick = (myCard) => {
+    console.log(`Vous jouez ${myCard}`);
     let theCardsPlayed = [...cardsPlayed];
     theCardsPlayed[0] = myCard;
     setCardsPlayed(theCardsPlayed);
@@ -162,8 +162,8 @@ export default function Game() {
   };
 
   const determineWinner = (theCardsPlayed) => {
-    console.log("coucou2");
     let winner = theCardsPlayed.indexOf(Math.max(...theCardsPlayed));
+    console.log(`${names[winner]} gagne le pli`);
     let theTricks = [...tricks];
     theTricks[winner]++;
     setTricks(theTricks);
@@ -177,32 +177,37 @@ export default function Game() {
   };
 
   const finishRound = (theTricks) => {
-    let theLife = [...life];
-    console.log(theLife);
+    const theLife = [...life];
+    const theElimTurn = [...elimTurn];
     for (let i = 0; i < playersNb; i++) {
       let damage = Math.abs(bids[i] - theTricks[i]);
+      if (damage > 0) {
+        console.log(`${names[i]} perd ${damage} vie(s)`);
+      }
       theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
       if (theLife[players[i]] === 0) {
-        setElimTurn((draft) => {
-          draft[players[i]] = round;
-        });
-        console.log(`${players[i]} est éliminé`);
+        theElimTurn[players[i]] = round;
+        setElimTurn(theElimTurn);
+        console.log(`${names[players[i]]} est éliminé`);
         if (i === 0) {
-          console.log("vous avez perdu");
+          console.log("Vous avez perdu");
+          setScore({ names, life: theLife, elimTurn: theElimTurn });
+          navigate("/score");
         }
       }
     }
-    console.log(theLife);
     setLife(theLife);
     if (theLife.filter((item) => item > 0).length === 1) {
-      console.log("vous avez gagné");
+      console.log("Vous avez gagné");
+      setScore({ names, life: theLife, elimTurn: theElimTurn });
+      navigate("/score");
     } else if (theLife.filter((item) => item > 0).length === 0) {
-      console.log("aucun gagnant");
+      console.log("Aucun gagnant");
     } else {
       let next = dealer;
       do {
         next = dealer === startPlayersNb - 1 ? 0 : next + 1;
-        console.log("next : " + next);
+        //console.log("next : " + next);
       } while (theLife[next] === 0);
       setDealer(next);
       setRound(round + 1);

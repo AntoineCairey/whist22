@@ -4,23 +4,21 @@ export default function Score() {
   const navigate = useNavigate();
   const { score } = useOutletContext();
 
-  score?.sort((a, b) => b.elimTurn - a.elimTurn);
-  score?.sort((a, b) => b.life - a.life);
+  console.log(score);
+  const { names, life, elimTurn } = score || {};
 
   return (
     score && (
       <>
-        <h1>
-          Vous avez {score.find((p) => p.id === 0).life > 0 ? "gagné" : "perdu"}
-        </h1>
+        <h1>Vous avez {life[0] > 0 ? "gagné" : "perdu"}</h1>
         <div>Score final :</div>
         <br />
-        {score.map((p) => (
-          <div key={p.id}>
-            {p.name} :
-            {p.life > 0
-              ? ` ${p.life} vie(s) restante(s)`
-              : ` éliminé tour ${p.elimTurn}`}
+        {names.map((name, index) => (
+          <div key={index}>
+            {name} :
+            {life[index] > 0
+              ? ` ${life[index]} vie(s) restante(s)`
+              : ` éliminé tour ${elimTurn[index]}`}
           </div>
         ))}
         <br />

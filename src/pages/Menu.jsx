@@ -4,32 +4,11 @@ export default function Menu() {
   const navigate = useNavigate();
   const { setScore } = useOutletContext();
 
-  const data = [
-    {
-      id: 0,
-      name: "Vous",
-      life: 0,
-      elimTurn: 6,
-    },
-    {
-      id: 1,
-      name: "Bot1",
-      life: 3,
-      elimTurn: 3,
-    },
-    {
-      id: 2,
-      name: "Bot2",
-      life: 2,
-      elimTurn: 5,
-    },
-    {
-      id: 3,
-      name: "Bot3",
-      life: 1,
-      elimTurn: 7,
-    },
-  ];
+  const data = {
+    names: ["Vous", "Bot 1", "Bot 2", "Bot 3"],
+    life: [1, 0, 0, 0],
+    elimTurn: [null, 6, 4, 3],
+  };
 
   return (
     <>
