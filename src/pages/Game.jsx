@@ -206,7 +206,6 @@ export default function Game() {
       let next = dealer;
       do {
         next = dealer === startPlayersNb - 1 ? 0 : next + 1;
-        //console.log("next : " + next);
       } while (theLife[next] === 0);
       setDealer(next);
       setRound(round + 1);
@@ -217,13 +216,8 @@ export default function Game() {
 
   return (
     <>
-      {/* <button onClick={() => navigate("/")}>Revenir au Menu</button>
-      <h1>Tarot Africain</h1>
-      <br /> */}
       {cards && (
         <>
-          {/* <div>Donneur : {dealer}</div>
-          <div>Au tour de : {player}</div> */}
           {startPlayers.map((player) => (
             <Player
               key={player}
@@ -235,24 +229,21 @@ export default function Game() {
 
           {askBid && (
             <div className="bid">
-              <h3>Votre mise ?</h3>
-              {Array.from({ length: cardsNb + 1 }, (_, index) => (
-                <button key={index} onClick={() => finishBids(index)}>
-                  {index}
-                </button>
-              ))}
+              <div className="bid-modal">
+                <h3>Votre mise ?</h3>
+                {Array.from({ length: cardsNb + 1 }, (_, index) => (
+                  <button key={index} onClick={() => finishBids(index)}>
+                    {index}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
-          {/* <h3>Cartes jouées</h3> */}
+
           <div className="board">
             {cardsPlayed.map((card, index) => (
-              <div className={position[index]}>
-                <Card
-                  key={index}
-                  isVisible={!!card}
-                  isClickable={false}
-                  value={card}
-                />
+              <div className={position[index]} key={index}>
+                <Card isVisible={!!card} isClickable={false} value={card} />
               </div>
             ))}
           </div>
