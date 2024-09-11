@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useImmer } from "use-immer";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Player from "../components/Player";
 import Card from "../components/Card";
@@ -9,6 +8,7 @@ export default function Game() {
   const startPlayersNb = 4;
   const startPlayers = [0, 1, 2, 3];
   const names = ["Vous", "Bot 1", "Bot 2", "Bot 3"];
+  const position = ["bottom", "left", "top", "right"];
   const { setScore } = useOutletContext();
 
   const [round, setRound] = useState(1); // numero de la manche
@@ -65,7 +65,7 @@ export default function Game() {
       let newCardsPlayed = [...cardsPlayed];
       newCardsPlayed[player] = cards[player][cardIndex];
       setCardsPlayed(newCardsPlayed);
-      // cards[player].splice(cardIndex, 1);
+
       let newCards = [...cards];
       newCards[player] = [...newCards[player]];
       newCards[player].splice(cardIndex, 1);
@@ -151,7 +151,6 @@ export default function Game() {
     theCardsPlayed[0] = myCard;
     setCardsPlayed(theCardsPlayed);
 
-    //cards[0].splice(cards[0].indexOf(myCard), 1);
     let newCards = [...cards];
     newCards[0] = [...newCards[0]];
     newCards[0].splice(cards[0].indexOf(myCard), 1);
@@ -218,15 +217,13 @@ export default function Game() {
 
   return (
     <>
-      <button onClick={() => navigate("/")}>Revenir au Menu</button>
+      {/* <button onClick={() => navigate("/")}>Revenir au Menu</button>
       <h1>Tarot Africain</h1>
-      {/* <button onClick={startGame}>Nouvelle partie</button> */}
-      <br />
+      <br /> */}
       {cards && (
         <>
-          <div>Donneur : {dealer}</div>
-          <div>Au tour de : {player}</div>
-          {/* <Player id={0} gameData={gameData} handleCardClick={finishTrick} /> */}
+          {/* <div>Donneur : {dealer}</div>
+          <div>Au tour de : {player}</div> */}
           {startPlayers.map((player) => (
             <Player
               key={player}
@@ -237,7 +234,7 @@ export default function Game() {
           ))}
 
           {askBid && (
-            <div>
+            <div className="bid">
               <h3>Votre mise ?</h3>
               {Array.from({ length: cardsNb + 1 }, (_, index) => (
                 <button key={index} onClick={() => finishBids(index)}>
@@ -246,15 +243,17 @@ export default function Game() {
               ))}
             </div>
           )}
-          <h3>Cartes jouées</h3>
-          <div>
+          {/* <h3>Cartes jouées</h3> */}
+          <div className="board">
             {cardsPlayed.map((card, index) => (
-              <Card
-                key={index}
-                isVisible={!!card}
-                isClickable={false}
-                value={card}
-              />
+              <div className={position[index]}>
+                <Card
+                  key={index}
+                  isVisible={!!card}
+                  isClickable={false}
+                  value={card}
+                />
+              </div>
             ))}
           </div>
         </>
