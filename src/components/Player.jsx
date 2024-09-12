@@ -21,9 +21,9 @@ export default function Player({ id, gameData, handleCardClick }) {
       {players.includes(id) ? (
         <>
           <div className="scores">
-            <h3 className={players[player] === id ? "active-player" : ""}>
+            <strong className={players[player] === id ? "active-player" : ""}>
               {names[id]} {dealer === id && "(D)"}
-            </h3>
+            </strong>
             <div>Vies : {life && life[id]}</div>
             <div>Mise : {bids[players.indexOf(id)] ?? "?"}</div>
             <div>Plis : {tricks && tricks[players.indexOf(id)]}</div>
@@ -43,9 +43,9 @@ export default function Player({ id, gameData, handleCardClick }) {
         </>
       ) : (
         <>
-          <h3 className={players[player] === id ? "active-player" : ""}>
+          <strong className={players[player] === id ? "active-player" : ""}>
             {names[id]} {dealer === id && "(D)"}
-          </h3>
+          </strong>
           <div>Eliminé tour {elimTurn[id]}</div>
         </>
       )}
