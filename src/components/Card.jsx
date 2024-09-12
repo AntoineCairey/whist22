@@ -10,7 +10,11 @@ export default function Card({
       className={`card ${isHorizontal ? "horizontal" : ""}`}
       onClick={() => (isClickable ? handleCardClick(value) : null)}
     >
-      <div>{isVisible ? value : "?"}</div>
+      {/* <div>{isVisible ? value : "?"}</div> */}
+      <img
+        src={isVisible ? `/cards/${value}.png` : `/cards/back.png`}
+        alt="card"
+      />
     </div>
   );
 }
