@@ -99,18 +99,19 @@ export default function Game() {
   };
 
   const startGame = () => {
-    setLife(Array(startPlayersNb).fill(3));
+    const theLife = Array(startPlayersNb).fill(3);
+    setLife(theLife);
     /* setLife([2, 0, 2, 2]); */
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
     setRound(1);
-    distributeCards(newDealer, 5);
+    distributeCards(newDealer, 5, theLife);
   };
 
   //s'exécute 1 fois, quand le jeu commence
   useEffect(startGame, []);
 
-  const distributeCards = (theDealer, theCardsNb) => {
+  const distributeCards = (theDealer, theCardsNb, theLife) => {
     console.log(`Distribution : ${theCardsNb} cartes par personne`);
     setCardsPlayed(Array(startPlayersNb).fill(null));
     setTricks(Array(startPlayersNb).fill(0));
@@ -131,14 +132,14 @@ export default function Game() {
       }
     }
     setCards(playersCards);
-    startBids(nextPlayer(theDealer));
+    startBids(nextPlayer(theDealer), theLife);
   };
 
-  const startBids = (theFirstPlayer) => {
+  const startBids = (theFirstPlayer, theLife) => {
     let bidder = theFirstPlayer;
     let theBids = Array(startPlayersNb).fill(null);
     while (bidder !== 0) {
-      if (life[bidder] > 0) {
+      if (theLife[bidder] > 0) {
         theBids[bidder] = Math.floor(Math.random() * 3);
       }
       bidder = nextPlayer(bidder);
@@ -240,7 +241,7 @@ export default function Game() {
       setDealer(next);
       setRound(round + 1);
       let theCardsNb = 5 - (round % 5);
-      distributeCards(next, theCardsNb);
+      distributeCards(next, theCardsNb, theLife);
     }
   };
 
