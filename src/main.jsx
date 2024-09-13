@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import Game from "./pages/Game.jsx";
 import Menu from "./pages/Menu.jsx";
 import Score from "./pages/Score.jsx";
+import Rules from "./pages/Rules.jsx";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: "/score",
         element: <Score />,
+      },
+      {
+        path: "/rules",
+        element: <Rules />,
       },
     ],
   },
