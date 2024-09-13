@@ -11,7 +11,7 @@ export default function Game() {
   const position = ["bottom", "left", "top", "right"];
   const { setScore } = useOutletContext();
 
-  const [round, setRound] = useState(1); // numero de la manche
+  const [round, setRound] = useState(null); // numero de la manche
   const [dealer, setDealer] = useState(
     Math.floor(Math.random() * startPlayersNb)
   ); // donneur
@@ -42,6 +42,7 @@ export default function Game() {
     tricks,
     cards,
     elimTurn,
+    cardsNb,
   };
 
   // fonction qui s'exécute à chaque tour (chaque fois que player change)
@@ -85,6 +86,10 @@ export default function Game() {
     return currentPlayer >= startPlayersNb - 1 ? 0 : currentPlayer + 1;
   };
 
+  const sumArray = (arr) => {
+    return arr.reduce((acc, curr) => acc + curr, 0);
+  };
+
   const handleCardClick = (value) => {
     if (value === 23) {
       setAskFool(true);
@@ -98,8 +103,8 @@ export default function Game() {
     /* setLife([2, 0, 2, 2]); */
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
-    setRound(1);
-    distributeCards(newDealer, 5);
+    setRound(4);
+    distributeCards(newDealer, 2);
   };
 
   //s'exécute 1 fois, quand le jeu commence
@@ -150,7 +155,9 @@ export default function Game() {
     while (bidder !== firstPlayer) {
       // faire une vraie fonction chooseBid
       if (life[bidder] > 0) {
-        theBids[bidder] = Math.floor(Math.random() * 3);
+        do {
+          theBids[bidder] = Math.floor(Math.random() * 3);
+        } while (bidder === dealer && sumArray(theBids) === cardsNb);
       }
       bidder = nextPlayer(bidder);
     }
@@ -266,7 +273,13 @@ export default function Game() {
               <div className="modal">
                 <h3>Votre mise</h3>
                 {Array.from({ length: cardsNb + 1 }, (_, index) => (
-                  <button key={index} onClick={() => finishBids(index)}>
+                  <button
+                    key={index}
+                    onClick={() => finishBids(index)}
+                    disabled={
+                      dealer === 0 && sumArray(bids) + index === cardsNb
+                    }
+                  >
                     {index}
                   </button>
                 ))}
