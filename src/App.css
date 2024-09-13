@@ -89,6 +89,7 @@ h3 {
   background: lightblue;
   font-size: 16px;
   margin: 5px 10px; */
+  margin: 1px;
   border-radius: 2px;
   display: flex;
   justify-content: center;
@@ -140,7 +141,7 @@ h3 {
   }
 }
 
-.bid {
+.modal-back {
   z-index: 2;
   position: absolute;
   top: 0;
@@ -152,8 +153,8 @@ h3 {
   align-items: center;
   background-color: rgba(0, 0, 0, 0.2);
 
-  .bid-modal {
-    background: lightgreen;
+  .modal {
+    background: white;
     border-radius: 5px;
     padding: 20px;
   }
@@ -171,4 +172,17 @@ h3 {
   border: 1px solid black;
   border-radius: 15px;
   padding: 20px; */
+}
+
+.fool-value {
+  background: blue;
+  position: absolute;
+  color: white;
+  border-radius: 50%;
+  border: solid 1px white;
+  height: 30px;
+  width: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
