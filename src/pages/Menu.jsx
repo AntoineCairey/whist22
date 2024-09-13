@@ -10,17 +10,18 @@ export default function Menu() {
     elimTurn: [null, 6, 4, 3],
   }; */
 
-
   return (
     <>
+      <img src="/joker-icon.svg" alt="joker-icon" className="menu-icon"/>
       <h1>Tarot africain</h1>
-      <div>Un jeu de cartes simple et passionnant</div>
-      <div>Jouez contre 3 bots et tentez d'être le dernier en jeu</div>
+      <div>Un jeu de cartes simple et passionnant.</div>
+      <br />
+      <div>Jouez contre 3 bots et tentez d'être le dernier en jeu.</div>
       <br />
       <button onClick={() => navigate("/rules")}>Lire les règles</button>
       <br />
       <button onClick={() => navigate("/game")}>Jouer</button>
-      
+
       {/* <br />
       <button
         onClick={() => {

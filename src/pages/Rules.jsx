@@ -1,6 +1,14 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Rules() {
+  const navigate = useNavigate();
+
   return (
     <div className="rules">
+      <button onClick={() => navigate("/")}>Revenir au Menu</button>
+      <br />
+      <br />
+
       <h3>Règles du tarot africain</h3>
       <div>
         <p>
