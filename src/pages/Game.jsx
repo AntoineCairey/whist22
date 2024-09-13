@@ -247,61 +247,69 @@ export default function Game() {
 
   return (
     <>
-      {cards && (
-        <>
-          {startPlayers.map((player) => (
-            <Player
-              key={player}
-              id={player}
-              gameData={gameData}
-              handleCardClick={handleCardClick}
-            />
-          ))}
+      <div className="info">
+        <button onClick={() => navigate("/")}>Revenir au Menu</button>
+        <div>
+          Manche {round} ({cardsNb} cartes/pers)
+        </div>
+      </div>
+      <div className="game">
+        {cards && (
+          <>
+            {startPlayers.map((player) => (
+              <Player
+                key={player}
+                id={player}
+                gameData={gameData}
+                handleCardClick={handleCardClick}
+              />
+            ))}
 
-          <div className="board">
-            {cardsPlayed.map(
-              (card, index) =>
-                card != null && (
-                  <div className={position[index]} key={index}>
-                    <Card isVisible={true} isClickable={false} value={card} />
-                  </div>
-                )
+            <div className="board">
+              {cardsPlayed.map(
+                (card, index) =>
+                  card != null && (
+                    <div className={position[index]} key={index}>
+                      <Card isVisible={true} isClickable={false} value={card} />
+                    </div>
+                  )
+              )}
+            </div>
+
+            {askBid && (
+              <div className="modal-back">
+                <div className="modal">
+                  <h3>Votre mise</h3>
+                  {Array.from({ length: cardsNb + 1 }, (_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => finishBids(index)}
+                      disabled={
+                        dealer === 0 && sumArray(bids) + index === cardsNb
+                      }
+                    >
+                      {index}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
 
-          {askBid && (
-            <div className="modal-back">
-              <div className="modal">
-                <h3>Votre mise</h3>
-                {Array.from({ length: cardsNb + 1 }, (_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => finishBids(index)}
-                    disabled={
-                      dealer === 0 && sumArray(bids) + index === cardsNb
-                    }
-                  >
-                    {index}
-                  </button>
-                ))}
+            {askFool && (
+              <div className="modal-back">
+                <div className="modal">
+                  <h3>Valeur de l'excuse</h3>
+                  {[0, 22].map((val) => (
+                    <button key={val} onClick={() => finishTrick(val)}>
+                      {val}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {askFool && (
-            <div className="modal-back">
-              <div className="modal">
-                <h3>Valeur de l'excuse</h3>
-                {[0, 22].map((val) => (
-                  <button key={val} onClick={() => finishTrick(val)}>
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </>
   );
 }

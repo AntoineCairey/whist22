@@ -3,10 +3,14 @@
   font-family: sans-serif;
 }
 
+body {
+  margin: 0;
+}
+
 #root {
   max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin: 0;
+  padding: 0;
   text-align: center;
   --card-zoom: 1.5;
   --card-height: calc(var(--card-zoom) * 68px);
@@ -190,4 +194,19 @@ h3 {
 .menu-icon {
   height: 100px;
   width: 100px;
+}
+
+.info {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 50px;
+  background: beige;
+}
+
+.game {
+  width: 100vw;
+  height: calc(100vh - 50px);
+  position: absolute;
+  left: 0;
 }
