@@ -31,14 +31,9 @@ export default function Game() {
   const [elimTurn, setElimTurn] = useState(Array(startPlayersNb).fill(null)); // tour élimination
 
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
-  let players = life
-    .map((value, index) => (value > 0 ? index : -1))
-    .filter((value) => value >= 0); // liste des joueurs en vie
-  let playersNb = players.length; // nombre de joueurs en vie
 
   const gameData = {
     names,
-    players,
     dealer,
     player,
     life,
@@ -57,6 +52,10 @@ export default function Game() {
     }
     if (loading === 2 && player === firstPlayer) {
       determineWinner(cardsPlayed);
+      return;
+    }
+    if (life[player] <= 0) {
+      setPlayer((p) => nextPlayer(p));
       return;
     }
     const id = setInterval(() => {
@@ -78,11 +77,12 @@ export default function Game() {
   }, [loading, player]);
 
   const nextPlayer = (currentPlayer) => {
-    return currentPlayer >= playersNb - 1 ? 0 : currentPlayer + 1;
+    return currentPlayer >= startPlayersNb - 1 ? 0 : currentPlayer + 1;
   };
 
   const startGame = () => {
-    setLife(Array(startPlayersNb).fill(2));
+    /* setLife(Array(startPlayersNb).fill(2)); */
+    setLife([2, 0, 2, 2]);
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
     setRound(1);
@@ -94,20 +94,22 @@ export default function Game() {
 
   const distributeCards = (theDealer, theCardsNb) => {
     console.log(`Distribution : ${theCardsNb} cartes par personne`);
-    setCardsPlayed(Array(playersNb).fill(null));
-    setTricks(Array(playersNb).fill(0));
+    setCardsPlayed(Array(startPlayersNb).fill(null));
+    setTricks(Array(startPlayersNb).fill(0));
     setFirstPlayer(nextPlayer(theDealer));
     const deck = Array.from({ length: 22 }, (_, index) => index + 1);
-    let playersCards = [];
-    for (let i = 0; i < playersNb; i++) {
-      let playerCards = [];
-      for (let j = 0; j < theCardsNb; j++) {
-        const index = Math.floor(Math.random() * deck.length);
-        playerCards.push(deck[index]);
-        deck.splice(index, 1);
+    const playersCards = Array(startPlayersNb).fill(null);
+    for (let i = 0; i < startPlayersNb; i++) {
+      if (life[i] > 0) {
+        const playerCards = [];
+        for (let j = 0; j < theCardsNb; j++) {
+          const index = Math.floor(Math.random() * deck.length);
+          playerCards.push(deck[index]);
+          deck.splice(index, 1);
+        }
+        playerCards.sort((a, b) => a - b);
+        playersCards[i] = playerCards;
       }
-      playerCards.sort((a, b) => a - b);
-      playersCards.push(playerCards);
     }
     setCards(playersCards);
     startBids(nextPlayer(theDealer));
@@ -115,9 +117,11 @@ export default function Game() {
 
   const startBids = (theFirstPlayer) => {
     let bidder = theFirstPlayer;
-    let theBids = Array(playersNb).fill(null);
+    let theBids = Array(startPlayersNb).fill(null);
     while (bidder !== 0) {
-      theBids[bidder] = Math.floor(Math.random() * 3);
+      if (life[bidder] > 0) {
+        theBids[bidder] = Math.floor(Math.random() * 3);
+      }
       bidder = nextPlayer(bidder);
     }
     setBids(theBids);
@@ -131,7 +135,9 @@ export default function Game() {
     let bidder = 1;
     while (bidder !== firstPlayer) {
       // faire une vraie fonction chooseBid
-      theBids[bidder] = Math.floor(Math.random() * 3);
+      if (life[bidder] > 0) {
+        theBids[bidder] = Math.floor(Math.random() * 3);
+      }
       bidder = nextPlayer(bidder);
     }
     setBids(theBids);
@@ -139,7 +145,7 @@ export default function Game() {
   };
 
   const startTrick = (theFirstPlayer) => {
-    setCardsPlayed(Array(playersNb).fill(null));
+    setCardsPlayed(Array(startPlayersNb).fill(null));
     setFirstPlayer(theFirstPlayer);
     setPlayer(theFirstPlayer);
     setLoading(1);
@@ -178,20 +184,22 @@ export default function Game() {
   const finishRound = (theTricks) => {
     const theLife = [...life];
     const theElimTurn = [...elimTurn];
-    for (let i = 0; i < playersNb; i++) {
-      let damage = Math.abs(bids[i] - theTricks[i]);
-      if (damage > 0) {
-        console.log(`${names[i]} perd ${damage} vie(s)`);
-      }
-      theLife[players[i]] = Math.max(theLife[players[i]] - damage, 0);
-      if (theLife[players[i]] === 0) {
-        theElimTurn[players[i]] = round;
-        setElimTurn(theElimTurn);
-        console.log(`${names[players[i]]} est éliminé`);
-        if (i === 0) {
-          console.log("Vous avez perdu");
-          setScore({ names, life: theLife, elimTurn: theElimTurn });
-          navigate("/score");
+    for (let i = 0; i < startPlayersNb; i++) {
+      if (life[i] > 0) {
+        let damage = Math.abs(bids[i] - theTricks[i]);
+        if (damage > 0) {
+          console.log(`${names[i]} perd ${damage} vie(s)`);
+        }
+        theLife[i] = Math.max(theLife[i] - damage, 0);
+        if (theLife[i] === 0) {
+          theElimTurn[i] = round;
+          setElimTurn(theElimTurn);
+          console.log(`${names[i]} est éliminé`);
+          if (i === 0) {
+            console.log("Vous avez perdu");
+            setScore({ names, life: theLife, elimTurn: theElimTurn });
+            navigate("/score");
+          }
         }
       }
     }
@@ -241,11 +249,14 @@ export default function Game() {
           )}
 
           <div className="board">
-            {cardsPlayed.map((card, index) => (
-              <div className={position[index]} key={index}>
-                <Card isVisible={!!card} isClickable={false} value={card} />
-              </div>
-            ))}
+            {cardsPlayed.map(
+              (card, index) =>
+                card && (
+                  <div className={position[index]} key={index}>
+                    <Card isVisible={true} isClickable={false} value={card} />
+                  </div>
+                )
+            )}
           </div>
         </>
       )}

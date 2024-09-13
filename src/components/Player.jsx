@@ -2,34 +2,25 @@ import Card from "./Card";
 
 export default function Player({ id, gameData, handleCardClick }) {
   //console.log(gameData);
-  const {
-    names,
-    players,
-    dealer,
-    player,
-    life,
-    bids,
-    tricks,
-    cards,
-    elimTurn,
-  } = gameData;
+  const { names, dealer, player, life, bids, tricks, cards, elimTurn } =
+    gameData;
 
   const position = ["bottom", "left", "top", "right"];
 
   return (
     <div className={`player ${position[id]}`}>
-      {players.includes(id) ? (
+      {life[id] > 0 ? (
         <>
           <div className="scores">
-            <strong className={players[player] === id ? "active-player" : ""}>
+            <strong className={player === id ? "active-player" : ""}>
               {names[id]} {dealer === id && "(D)"}
             </strong>
             <div>Vies : {life && life[id]}</div>
-            <div>Mise : {bids[players.indexOf(id)] ?? "?"}</div>
-            <div>Plis : {tricks && tricks[players.indexOf(id)]}</div>
+            <div>Mise : {bids[id] ?? "?"}</div>
+            <div>Plis : {tricks && tricks[id]}</div>
           </div>
           <div className={`hand ${position[id]}`}>
-            {cards[players.indexOf(id)].map((card) => (
+            {cards[id].map((card) => (
               <Card
                 key={card}
                 isHorizontal={id === 1 || id === 3}
@@ -43,9 +34,7 @@ export default function Player({ id, gameData, handleCardClick }) {
         </>
       ) : (
         <>
-          <strong className={players[player] === id ? "active-player" : ""}>
-            {names[id]} {dealer === id && "(D)"}
-          </strong>
+          <strong>{names[id]}</strong>
           <div>Eliminé tour {elimTurn[id]}</div>
         </>
       )}
