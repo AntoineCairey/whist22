@@ -99,12 +99,12 @@ export default function Game() {
   };
 
   const startGame = () => {
-    setLife(Array(startPlayersNb).fill(5));
+    setLife(Array(startPlayersNb).fill(3));
     /* setLife([2, 0, 2, 2]); */
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
-    setRound(4);
-    distributeCards(newDealer, 2);
+    setRound(1);
+    distributeCards(newDealer, 5);
   };
 
   //s'exécute 1 fois, quand le jeu commence
