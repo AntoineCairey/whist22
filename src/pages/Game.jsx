@@ -61,11 +61,42 @@ export default function Game() {
       return;
     }
     const id = setInterval(() => {
-      const cardIndex = Math.floor(Math.random() * cards[player].length);
+      /* const cardIndex = Math.floor(Math.random() * cards[player].length);
       let cardPlayed = cards[player][cardIndex];
       if (cardPlayed === 23) {
         cardPlayed = Math.random() < 0.5 ? 0 : 22;
+      } */
+      let cardPlayed;
+      let cardIndex;
+      /* SI dernier joueur ET pas gagné assez de plis ET peut gagner le pli,
+      ALORS joue la plus grande carte (si excuse, vaut 22)
+      SINON joue la plus petite carte (si excuse, vaut 0) */
+      console.log(
+        nextAlivePlayer(player) === firstPlayer
+          ? "dernier joueur"
+          : "pas dernier joueur"
+      );
+      console.log(
+        tricks[player] < bids[player] ? "pas assez de plis" : "assez de plis"
+      );
+      console.log(
+        cards[player].at(-1) > Math.max(...cardsPlayed, 0)
+          ? "peut gagner pli"
+          : "peut pas gagner pli"
+      );
+
+      if (
+        nextAlivePlayer(player) === firstPlayer &&
+        tricks[player] < bids[player] &&
+        cards[player].at(-1) > Math.max(...cardsPlayed, 0)
+      ) {
+        cardPlayed = cards[player].at(-1) === 23 ? 22 : cards[player].at(-1);
+        cardIndex = cards[player].length - 1;
+      } else {
+        cardPlayed = cards[player][0] === 23 ? 0 : cards[player][0];
+        cardIndex = 0;
       }
+
       console.log(`${names[player]} joue ${cardPlayed}`);
       let newCardsPlayed = [...cardsPlayed];
       newCardsPlayed[player] = cardPlayed;
@@ -84,6 +115,14 @@ export default function Game() {
 
   const nextPlayer = (currentPlayer) => {
     return currentPlayer >= startPlayersNb - 1 ? 0 : currentPlayer + 1;
+  };
+
+  const nextAlivePlayer = (currentPlayer) => {
+    let p = currentPlayer;
+    do {
+      p = nextPlayer(p);
+    } while (life[p] <= 0);
+    return p;
   };
 
   const sumArray = (arr) => {
