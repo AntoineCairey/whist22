@@ -13,7 +13,7 @@ export default function Rules() {
       <div>
         <p>
           Au tarot africain, vous jouez contre des adversaires (3 ici). Vous
-          commencez la partie avec 5 vies chacun. Si vous tombez à 0 vies, vous
+          commencez la partie avec 3 vies chacun. Si vous tombez à 0 vies, vous
           êtes éliminé. Votre but est d'être le dernier joueur en vie.
         </p>
         <p>

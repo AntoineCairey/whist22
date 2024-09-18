@@ -11,7 +11,7 @@ export default function Game() {
   const position = ["bottom", "left", "top", "right"];
   const { setScore } = useOutletContext();
 
-  const [round, setRound] = useState(null); // numero de la manche
+  const [round, setRound] = useState(1); // numero de la manche
   const [dealer, setDealer] = useState(
     Math.floor(Math.random() * startPlayersNb)
   ); // donneur
@@ -61,11 +61,41 @@ export default function Game() {
       return;
     }
     const id = setInterval(() => {
-      const cardIndex = Math.floor(Math.random() * cards[player].length);
-      let cardPlayed = cards[player][cardIndex];
-      if (cardPlayed === 23) {
-        cardPlayed = Math.random() < 0.5 ? 0 : 22;
+      let cardIndex;
+      let cardPlayed;
+      let wantToWin = false;
+      let maxCardPlayed = Math.max(...cardsPlayed, 0);
+
+      if (nextAlivePlayer(player) !== firstPlayer) {
+        //pas dernier joueur
+        cardIndex = 0;
+        // cas où j'ai l'excuse en dernière carte et j'ai encore un pli à faire
+        wantToWin = cards[player].length === 1 && tricks[player] < bids[player];
+      } else if (
+        tricks[player] < bids[player] &&
+        cards[player].at(-1) > maxCardPlayed
+        //dernier joueur, veut et peut gagner le pli
+      ) {
+        wantToWin = true;
+        cardIndex = -1;
+      } else {
+        cardIndex = cards[player].findLastIndex((c) => c < maxCardPlayed);
       }
+      cardPlayed = cards[player].at(cardIndex);
+
+      // si excuse
+      if (cardPlayed === 23) {
+        if (!wantToWin) {
+          cardPlayed = 0;
+        } else if (cards[player].at(-2) > maxCardPlayed) {
+          // si on peut gagner sans jouer l'excuse, on évite de jouer l'excuse
+          cardIndex = -2;
+          cardPlayed = cards[player].at(-2);
+        } else {
+          cardPlayed = 22;
+        }
+      }
+
       console.log(`${names[player]} joue ${cardPlayed}`);
       let newCardsPlayed = [...cardsPlayed];
       newCardsPlayed[player] = cardPlayed;
@@ -86,6 +116,14 @@ export default function Game() {
     return currentPlayer >= startPlayersNb - 1 ? 0 : currentPlayer + 1;
   };
 
+  const nextAlivePlayer = (currentPlayer) => {
+    let p = currentPlayer;
+    do {
+      p = nextPlayer(p);
+    } while (life[p] <= 0);
+    return p;
+  };
+
   const sumArray = (arr) => {
     return arr.reduce((acc, curr) => acc + curr, 0);
   };
@@ -99,18 +137,19 @@ export default function Game() {
   };
 
   const startGame = () => {
-    setLife(Array(startPlayersNb).fill(3));
+    const theLife = Array(startPlayersNb).fill(3);
+    setLife(theLife);
     /* setLife([2, 0, 2, 2]); */
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
     setRound(1);
-    distributeCards(newDealer, 5);
+    distributeCards(newDealer, 5, theLife);
   };
 
   //s'exécute 1 fois, quand le jeu commence
   useEffect(startGame, []);
 
-  const distributeCards = (theDealer, theCardsNb) => {
+  const distributeCards = (theDealer, theCardsNb, theLife) => {
     console.log(`Distribution : ${theCardsNb} cartes par personne`);
     setCardsPlayed(Array(startPlayersNb).fill(null));
     setTricks(Array(startPlayersNb).fill(0));
@@ -131,15 +170,22 @@ export default function Game() {
       }
     }
     setCards(playersCards);
-    startBids(nextPlayer(theDealer));
+    startBids(nextPlayer(theDealer), theLife, playersCards, theCardsNb);
   };
 
-  const startBids = (theFirstPlayer) => {
+  const startBids = (theFirstPlayer, theLife, playersCards, theCardsNb) => {
     let bidder = theFirstPlayer;
     let theBids = Array(startPlayersNb).fill(null);
+    const totalCards = theCardsNb * theLife.filter((l) => l > 0).length;
+    const threshold = 10.5 + totalCards * 0.35;
+    console.log(theCardsNb);
+    console.log(totalCards);
+    console.log(threshold);
     while (bidder !== 0) {
-      if (life[bidder] > 0) {
-        theBids[bidder] = Math.floor(Math.random() * 3);
+      if (theLife[bidder] > 0) {
+        //theBids[bidder] = Math.floor(Math.random() * 3);
+        const bid = playersCards[bidder].filter((c) => c >= threshold).length;
+        theBids[bidder] = bid;
       }
       bidder = nextPlayer(bidder);
     }
@@ -151,13 +197,20 @@ export default function Game() {
     setAskBid(false);
     let theBids = [...bids];
     theBids[0] = myBid;
+    const totalCards = cardsNb * life.filter((l) => l > 0).length;
+    const threshold = 10.5 + totalCards * 0.35;
     let bidder = 1;
     while (bidder !== firstPlayer) {
       // faire une vraie fonction chooseBid
       if (life[bidder] > 0) {
-        do {
+        /* do {
           theBids[bidder] = Math.floor(Math.random() * 3);
-        } while (bidder === dealer && sumArray(theBids) === cardsNb);
+        } while (bidder === dealer && sumArray(theBids) === cardsNb); */
+        let bid = cards[bidder].filter((c) => c >= threshold).length;
+        if (bidder === dealer && sumArray(theBids) + bid === cardsNb) {
+          bid === 0 ? bid++ : bid--;
+        }
+        theBids[bidder] = bid;
       }
       bidder = nextPlayer(bidder);
     }
@@ -235,72 +288,80 @@ export default function Game() {
     } else {
       let next = dealer;
       do {
-        next = dealer === startPlayersNb - 1 ? 0 : next + 1;
+        next = dealer >= startPlayersNb - 1 ? 0 : next + 1;
       } while (theLife[next] === 0);
       setDealer(next);
       setRound(round + 1);
       let theCardsNb = 5 - (round % 5);
-      distributeCards(next, theCardsNb);
+      distributeCards(next, theCardsNb, theLife);
     }
   };
 
   return (
     <>
-      {cards && (
-        <>
-          {startPlayers.map((player) => (
-            <Player
-              key={player}
-              id={player}
-              gameData={gameData}
-              handleCardClick={handleCardClick}
-            />
-          ))}
+      <div className="info">
+        <button onClick={() => navigate("/")}>Revenir au Menu</button>
+        <div>
+          Manche {round} ({cardsNb} cartes/pers)
+        </div>
+      </div>
+      <div className="game">
+        {cards && (
+          <>
+            {startPlayers.map((player) => (
+              <Player
+                key={player}
+                id={player}
+                gameData={gameData}
+                handleCardClick={handleCardClick}
+              />
+            ))}
 
-          <div className="board">
-            {cardsPlayed.map(
-              (card, index) =>
-                card != null && (
-                  <div className={position[index]} key={index}>
-                    <Card isVisible={true} isClickable={false} value={card} />
-                  </div>
-                )
+            <div className="board">
+              {cardsPlayed.map(
+                (card, index) =>
+                  card != null && (
+                    <div className={position[index]} key={index}>
+                      <Card isVisible={true} isClickable={false} value={card} />
+                    </div>
+                  )
+              )}
+            </div>
+
+            {askBid && (
+              <div className="modal-back">
+                <div className="modal">
+                  <h3>Votre mise</h3>
+                  {Array.from({ length: cardsNb + 1 }, (_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => finishBids(index)}
+                      disabled={
+                        dealer === 0 && sumArray(bids) + index === cardsNb
+                      }
+                    >
+                      {index}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
 
-          {askBid && (
-            <div className="modal-back">
-              <div className="modal">
-                <h3>Votre mise</h3>
-                {Array.from({ length: cardsNb + 1 }, (_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => finishBids(index)}
-                    disabled={
-                      dealer === 0 && sumArray(bids) + index === cardsNb
-                    }
-                  >
-                    {index}
-                  </button>
-                ))}
+            {askFool && (
+              <div className="modal-back">
+                <div className="modal">
+                  <h3>Valeur de l'excuse</h3>
+                  {[0, 22].map((val) => (
+                    <button key={val} onClick={() => finishTrick(val)}>
+                      {val}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {askFool && (
-            <div className="modal-back">
-              <div className="modal">
-                <h3>Valeur de l'excuse</h3>
-                {[0, 22].map((val) => (
-                  <button key={val} onClick={() => finishTrick(val)}>
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </>
   );
 }
