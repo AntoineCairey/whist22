@@ -33,7 +33,7 @@ export default function Player({ id, gameData, handleCardClick }) {
               <Card
                 key={card}
                 isHorizontal={id === 1 || id === 3}
-                isVisible={/* (id === 0) !== (cardsNb === 1) */ true}
+                isVisible={(id === 0) !== (cardsNb === 1)}
                 isClickable={id === 0 && player === 0}
                 value={card}
                 handleCardClick={handleCardClick}
