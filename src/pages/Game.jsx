@@ -11,7 +11,7 @@ export default function Game() {
   const position = ["bottom", "left", "top", "right"];
   const { setScore } = useOutletContext();
 
-  const [round, setRound] = useState(null); // numero de la manche
+  const [round, setRound] = useState(1); // numero de la manche
   const [dealer, setDealer] = useState(
     Math.floor(Math.random() * startPlayersNb)
   ); // donneur
@@ -132,15 +132,22 @@ export default function Game() {
       }
     }
     setCards(playersCards);
-    startBids(nextPlayer(theDealer), theLife);
+    startBids(nextPlayer(theDealer), theLife, playersCards, theCardsNb);
   };
 
-  const startBids = (theFirstPlayer, theLife) => {
+  const startBids = (theFirstPlayer, theLife, playersCards, theCardsNb) => {
     let bidder = theFirstPlayer;
     let theBids = Array(startPlayersNb).fill(null);
+    const totalCards = theCardsNb * theLife.filter((l) => l > 0).length;
+    const threshold = 10.5 + totalCards * 0.35;
+    console.log(theCardsNb);
+    console.log(totalCards);
+    console.log(threshold);
     while (bidder !== 0) {
       if (theLife[bidder] > 0) {
-        theBids[bidder] = Math.floor(Math.random() * 3);
+        //theBids[bidder] = Math.floor(Math.random() * 3);
+        const bid = playersCards[bidder].filter((c) => c >= threshold).length;
+        theBids[bidder] = bid;
       }
       bidder = nextPlayer(bidder);
     }
@@ -152,13 +159,20 @@ export default function Game() {
     setAskBid(false);
     let theBids = [...bids];
     theBids[0] = myBid;
+    const totalCards = cardsNb * life.filter((l) => l > 0).length;
+    const threshold = 10.5 + totalCards * 0.35;
     let bidder = 1;
     while (bidder !== firstPlayer) {
       // faire une vraie fonction chooseBid
       if (life[bidder] > 0) {
-        do {
+        /* do {
           theBids[bidder] = Math.floor(Math.random() * 3);
-        } while (bidder === dealer && sumArray(theBids) === cardsNb);
+        } while (bidder === dealer && sumArray(theBids) === cardsNb); */
+        let bid = cards[bidder].filter((c) => c >= threshold).length;
+        if (bidder === dealer && sumArray(theBids) + bid === cardsNb) {
+          bid === 0 ? bid++ : bid--;
+        }
+        theBids[bidder] = bid;
       }
       bidder = nextPlayer(bidder);
     }
