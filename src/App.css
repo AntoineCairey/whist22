@@ -34,7 +34,7 @@ h3 {
 }
 
 .active-player {
-  background-color: lightskyblue;
+  background-color: white;
   border-radius: 5px;
 }
 
@@ -43,8 +43,8 @@ h3 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2px 15px;
-  margin: 0px 10px;
+  padding: 0px 15px;
+  margin: 2px 10px;
 }
 
 .player {
@@ -89,12 +89,7 @@ h3 {
 }
 
 .card {
-  /* padding: 5px 10px;
-  background: lightblue;
-  font-size: 16px;
-  margin: 5px 10px; */
   margin: 1px;
-  border-radius: 2px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -102,9 +97,11 @@ h3 {
   height: var(--card-height);
   width: var(--card-width);
 
+  img {
+    border-radius: 5px;
+  }
+
   &.horizontal {
-    /* transform: rotate(90deg);
-    border: solid 1px black; */
     height: var(--card-width);
     width: var(--card-height);
 
@@ -209,6 +206,7 @@ h3 {
   height: calc(100vh - 50px);
   position: absolute;
   left: 0;
+  background: seagreen;
 }
 
 .history {

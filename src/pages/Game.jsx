@@ -65,8 +65,8 @@ export default function Game() {
       setPlayer((p) => nextPlayer(p));
       return;
     }
-    // si aucun de ces cas -> le bot choisit une carte à jouer (intervalle de 2s)
-    const id = setInterval(() => {
+    // si aucun de ces cas -> le bot choisit une carte à jouer
+    const id = setTimeout(() => {
       let cardIndex;
       let cardPlayed;
       let biggestCardOnBoard = Math.max(...cardsPlayed, 0);
@@ -133,7 +133,7 @@ export default function Game() {
       setPlayer((p) => nextPlayer(p));
     }, 2000);
     return () => {
-      clearInterval(id);
+      clearTimeout(id);
     };
   }, [loading, player]);
 
@@ -354,11 +354,7 @@ export default function Game() {
               )}
             </div>
 
-            <div
-              className="history"
-            >
-              {history}
-            </div>
+            <div className="history">{history}</div>
 
             {askBid && (
               <div className="modal-back">
