@@ -31,6 +31,8 @@ export default function Game() {
   const [cards, setCards] = useState(null); // cartes en main
   const [elimTurn, setElimTurn] = useState(Array(startPlayersNb).fill(null)); // tour élimination
 
+  const [history, setHistory] = useState([]); // historique à afficher
+
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
 
   const gameData = {
@@ -49,17 +51,21 @@ export default function Game() {
   // fait jouer une nouvelle carte au bot dont c'est le tour puis passe au suivant
   // si fin de pli, détermine le gagnant
   useEffect(() => {
+    // si pli pas commencé ou PJ doit jouer -> on ne fait rien
     if (loading === 0 || (loading === 1 && player === 0)) {
       return;
     }
+    // si fin du pli -> déterminer le gagnant
     if (loading === 2 && player === firstPlayer) {
       determineWinner(cardsPlayed);
       return;
     }
+    // si joueur est mort -> on passe au suivant
     if (life[player] <= 0) {
       setPlayer((p) => nextPlayer(p));
       return;
     }
+    // si aucun de ces cas -> le bot choisit une carte à jouer (intervalle de 2s)
     const id = setInterval(() => {
       let cardIndex;
       let cardPlayed;
@@ -71,6 +77,12 @@ export default function Game() {
       if (!needsToScore) {
         // pas de pli à faire -> joue sa plus grande carde perdante
         cardIndex = cards[player].findLastIndex((c) => c < biggestCardOnBoard);
+        if (!isLastPlayer && cardIndex === -1) {
+          // si pas de carte perdante
+          // dernier joueur -> plus grande carte
+          // pas dernier joueur -> plus petite carte
+          cardIndex = 0;
+        }
       } else {
         // encore au moins un pli à faire
         if (isLastPlayer && canWinTrick) {
@@ -107,6 +119,8 @@ export default function Game() {
       }
 
       console.log(`${names[player]} joue ${cardPlayed}`);
+      setHistory([`${names[player]} joue ${cardPlayed}`]);
+
       let newCardsPlayed = [...cardsPlayed];
       newCardsPlayed[player] = cardPlayed;
       setCardsPlayed(newCardsPlayed);
@@ -115,6 +129,7 @@ export default function Game() {
       newCards[player] = [...newCards[player]];
       newCards[player].splice(cardIndex, 1);
       setCards(newCards);
+
       setPlayer((p) => nextPlayer(p));
     }, 2000);
     return () => {
@@ -149,7 +164,6 @@ export default function Game() {
   const startGame = () => {
     const theLife = Array(startPlayersNb).fill(3);
     setLife(theLife);
-    /* setLife([2, 0, 2, 2]); */
     let newDealer = Math.floor(Math.random() * startPlayersNb);
     setDealer(newDealer);
     setRound(1);
@@ -165,7 +179,10 @@ export default function Game() {
     setTricks(Array(startPlayersNb).fill(0));
     setFirstPlayer(nextPlayer(theDealer));
     const deck = Array.from({ length: 21 }, (_, index) => index + 1);
-    deck.push(23);
+    // on rajoute l'excuse sauf dans le tour à 1 carte
+    if (theCardsNb > 1) {
+      deck.push(23);
+    }
     const playersCards = Array(startPlayersNb).fill(null);
     for (let i = 0; i < startPlayersNb; i++) {
       if (life[i] > 0) {
@@ -335,6 +352,12 @@ export default function Game() {
                     </div>
                   )
               )}
+            </div>
+
+            <div
+              className="history"
+            >
+              {history}
             </div>
 
             {askBid && (

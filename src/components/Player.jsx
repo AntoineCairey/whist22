@@ -20,9 +20,9 @@ export default function Player({ id, gameData, handleCardClick }) {
     <div className={`player ${position[id]}`}>
       {life[id] > 0 ? (
         <>
-          <div className="scores">
-            <strong className={player === id ? "active-player" : ""}>
-              {names[id]} {dealer === id && "(D)"}
+          <div className={`scores${player === id ? " active-player" : ""}`}>
+            <strong>
+              {names[id]} {dealer === id && "♟️"}
             </strong>
             <div>{life && life[id]} ❤️</div>
             {/* <div>Mise : {bids[id] ?? "?"}</div> */}

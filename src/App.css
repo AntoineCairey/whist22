@@ -34,17 +34,17 @@ h3 {
 }
 
 .active-player {
-  color: red;
+  background-color: lightskyblue;
+  border-radius: 5px;
 }
 
 .scores {
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-  div {
-    margin: 0px 30px;
-  }
+  align-items: center;
+  padding: 2px 15px;
+  margin: 0px 10px;
 }
 
 .player {
@@ -209,4 +209,14 @@ h3 {
   height: calc(100vh - 50px);
   position: absolute;
   left: 0;
+}
+
+.history {
+  z-index: 2;
+  position: absolute;
+  background: lightpink;
+  padding: 10px;
+  margin: 30px;
+  border-radius: 5px;
+  border: 1px solid white;
 }
