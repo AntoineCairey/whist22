@@ -63,36 +63,46 @@ export default function Game() {
     const id = setInterval(() => {
       let cardIndex;
       let cardPlayed;
-      let wantToWin = false;
-      let maxCardPlayed = Math.max(...cardsPlayed, 0);
+      let biggestCardOnBoard = Math.max(...cardsPlayed, 0);
+      let needsToScore = tricks[player] < bids[player];
+      let isLastPlayer = nextAlivePlayer(player) === firstPlayer;
+      let canWinTrick = cards[player].at(-1) > biggestCardOnBoard;
 
-      if (nextAlivePlayer(player) !== firstPlayer) {
-        //pas dernier joueur
-        cardIndex = 0;
-        // cas où j'ai l'excuse en dernière carte et j'ai encore un pli à faire
-        wantToWin = cards[player].length === 1 && tricks[player] < bids[player];
-      } else if (
-        tricks[player] < bids[player] &&
-        cards[player].at(-1) > maxCardPlayed
-        //dernier joueur, veut et peut gagner le pli
-      ) {
-        wantToWin = true;
-        cardIndex = -1;
+      if (!needsToScore) {
+        // pas de pli à faire -> joue sa plus grande carde perdante
+        cardIndex = cards[player].findLastIndex((c) => c < biggestCardOnBoard);
       } else {
-        cardIndex = cards[player].findLastIndex((c) => c < maxCardPlayed);
+        // encore au moins un pli à faire
+        if (isLastPlayer && canWinTrick) {
+          // dernier joueur et peut gagner
+          if (bids[player] - tricks[player] >= 2) {
+            // doit faire plus d'un pli -> plus petite carte gagnante
+            cardIndex = cards[player].findIndex((c) => c > biggestCardOnBoard);
+          } else {
+            // doit faire un seul pli -> plus grande carte
+            cardIndex = -1;
+          }
+        } else {
+          // pas dernier joueur ou peut pas gagner -> plus petite carte
+          cardIndex = 0;
+        }
       }
       cardPlayed = cards[player].at(cardIndex);
 
-      // si excuse
+      // si carte choisie = excuse
       if (cardPlayed === 23) {
-        if (!wantToWin) {
+        if (!needsToScore) {
+          // si a fait ses plis -> excuse vaut 0
           cardPlayed = 0;
-        } else if (cards[player].at(-2) > maxCardPlayed) {
-          // si on peut gagner sans jouer l'excuse, on évite de jouer l'excuse
-          cardIndex = -2;
-          cardPlayed = cards[player].at(-2);
         } else {
-          cardPlayed = 22;
+          if (cards[player].at(-2) > biggestCardOnBoard) {
+            // si on peut gagner sans jouer l'excuse, on évite de jouer l'excuse
+            cardIndex = -2;
+            cardPlayed = cards[player].at(-2);
+          } else {
+            // si a pas fait tous ses plis -> excuse vaut 22
+            cardPlayed = 22;
+          }
         }
       }
 
@@ -177,13 +187,14 @@ export default function Game() {
     let bidder = theFirstPlayer;
     let theBids = Array(startPlayersNb).fill(null);
     const totalCards = theCardsNb * theLife.filter((l) => l > 0).length;
+    // on calcule une valeur seuil
+    // toute carte supérieure à cette valeur est considérée comme gagnante
     const threshold = 10.5 + totalCards * 0.35;
-    console.log(theCardsNb);
+    /* console.log(theCardsNb);
     console.log(totalCards);
-    console.log(threshold);
+    console.log(threshold); */
     while (bidder !== 0) {
       if (theLife[bidder] > 0) {
-        //theBids[bidder] = Math.floor(Math.random() * 3);
         const bid = playersCards[bidder].filter((c) => c >= threshold).length;
         theBids[bidder] = bid;
       }
@@ -201,12 +212,10 @@ export default function Game() {
     const threshold = 10.5 + totalCards * 0.35;
     let bidder = 1;
     while (bidder !== firstPlayer) {
-      // faire une vraie fonction chooseBid
       if (life[bidder] > 0) {
-        /* do {
-          theBids[bidder] = Math.floor(Math.random() * 3);
-        } while (bidder === dealer && sumArray(theBids) === cardsNb); */
         let bid = cards[bidder].filter((c) => c >= threshold).length;
+        // si dernier à parler -> on modifie la valeur de son annonce pour respecter la contrainte
+        // le total des annonces ne doit pas etre egal au nombre de cartes en main
         if (bidder === dealer && sumArray(theBids) + bid === cardsNb) {
           bid === 0 ? bid++ : bid--;
         }

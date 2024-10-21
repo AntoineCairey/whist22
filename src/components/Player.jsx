@@ -24,16 +24,18 @@ export default function Player({ id, gameData, handleCardClick }) {
             <strong className={player === id ? "active-player" : ""}>
               {names[id]} {dealer === id && "(D)"}
             </strong>
-            <div>Vies : {life && life[id]}</div>
-            <div>Mise : {bids[id] ?? "?"}</div>
-            <div>Plis : {tricks && tricks[id]}</div>
+            <div>{life && life[id]} ❤️</div>
+            {/* <div>Mise : {bids[id] ?? "?"}</div> */}
+            <div>
+              {tricks && tricks[id]} / {bids[id] ?? "?"} 🃏
+            </div>
           </div>
           <div className={`hand ${position[id]}`}>
             {cards[id].map((card) => (
               <Card
                 key={card}
                 isHorizontal={id === 1 || id === 3}
-                isVisible={(id === 0) !== (cardsNb === 1)}
+                isVisible={/* (id === 0) !== (cardsNb === 1) */ true}
                 isClickable={id === 0 && player === 0}
                 value={card}
                 handleCardClick={handleCardClick}
