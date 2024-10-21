@@ -31,7 +31,7 @@ export default function Game() {
   const [cards, setCards] = useState(null); // cartes en main
   const [elimTurn, setElimTurn] = useState(Array(startPlayersNb).fill(null)); // tour élimination
 
-  const [history, setHistory] = useState([]); // historique à afficher
+  const [history, setHistory] = useState(); // historique à afficher
   const [step, setStep] = useState("startGame"); // étape du jeu (state machine)
 
   let cardsNb = 5 - ((round - 1) % 5); // nombre de cartes en main pour cette manche
@@ -61,6 +61,8 @@ export default function Game() {
 
       case "distributeCards":
         console.log(`Distribution : ${cardsNb} cartes par personne`);
+        setHistory(`${names[dealer]} distribue ${cardsNb} cartes par personne`);
+
         setCardsPlayed(Array(startPlayersNb).fill(null));
         setTricks(Array(startPlayersNb).fill(0));
         setFirstPlayer(nextAlivePlayer(dealer));
@@ -95,37 +97,46 @@ export default function Game() {
         if (player === firstPlayer && bids[player] != null) {
           setStep("playerPlay");
           return;
-        }
-        // si PJ doit parler -> on ne fait rien
-        if (player === 0) {
-          setAskBid(true);
-          return;
-        }
-        // si joueur est mort -> on passe au suivant
-        if (life[player] <= 0) {
-          setPlayer((p) => nextAlivePlayer(p));
-          return;
-        }
-        const bidTimeout = setTimeout(() => {
-          const totalCards = cardsNb * life.filter((l) => l > 0).length;
-          // on calcule une valeur seuil
-          // toute carte supérieure à cette valeur est considérée comme gagnante
-          const threshold = 10.5 + totalCards * 0.35;
 
-          let bid = cards[player].filter((c) => c >= threshold).length;
-          // si dernier à parler -> on modifie la valeur de son annonce pour respecter la contrainte
-          // le total des annonces ne doit pas etre egal au nombre de cartes en main
-          if (player === dealer && sumArray(bids) + bid === cardsNb) {
-            bid === 0 ? bid++ : bid--;
-          }
-          const theBids = [...bids];
-          theBids[player] = bid;
-          setBids(theBids);
+          // si PJ doit parler -> on ne fait rien
+        } else if (player === 0) {
+          setTimeout(() => {
+            setHistory("A vous de parler");
+            setAskBid(true);
+            return;
+          }, 2000);
+
+          // si joueur est mort -> on passe au suivant
+        } else if (life[player] <= 0) {
           setPlayer((p) => nextAlivePlayer(p));
-        }, 2000);
-        return () => {
-          clearTimeout(bidTimeout);
-        };
+          return;
+
+          // cas classique : le bot choisit son annonce
+        } else {
+          const bidTimeout = setTimeout(() => {
+            const totalCards = cardsNb * life.filter((l) => l > 0).length;
+            // on calcule une valeur seuil
+            // toute carte supérieure à cette valeur est considérée comme gagnante
+            const threshold = 10.5 + totalCards * 0.35;
+
+            let bid = cards[player].filter((c) => c >= threshold).length;
+            // si dernier à parler -> on modifie la valeur de son annonce pour respecter la contrainte
+            // le total des annonces ne doit pas etre egal au nombre de cartes en main
+            if (player === dealer && sumArray(bids) + bid === cardsNb) {
+              bid === 0 ? bid++ : bid--;
+            }
+            const theBids = [...bids];
+            theBids[player] = bid;
+            setBids(theBids);
+            setHistory(
+              `${names[player]} annonce ${bid} pli${bid > 1 ? "s" : ""}`
+            );
+            setPlayer((p) => nextAlivePlayer(p));
+          }, 2000);
+          return () => {
+            clearTimeout(bidTimeout);
+          };
+        }
         break;
 
       // =============================================================================================
@@ -135,101 +146,106 @@ export default function Game() {
         if (player === firstPlayer && cardsPlayed[player] != null) {
           setStep("finishTrick");
           return;
-        }
-        // si PJ doit jouer -> on ne fait rien
-        if (player === 0) {
-          return;
-        }
-        // si joueur est mort -> on passe au suivant
-        if (life[player] <= 0) {
+
+          // si PJ doit jouer -> on ne fait rien
+        } else if (player === 0) {
+          setTimeout(() => {
+            setHistory("A vous de jouer");
+            return;
+          }, 2000);
+
+          // si joueur est mort -> on passe au suivant
+        } else if (life[player] <= 0) {
           setPlayer((p) => nextAlivePlayer(p));
           return;
-        }
-        // si aucun de ces cas -> le bot choisit une carte à jouer
-        const playTimeout = setTimeout(() => {
-          let cardIndex;
-          let cardPlayed;
-          let biggestCardOnBoard = Math.max(...cardsPlayed, 0);
-          let needsToScore = tricks[player] < bids[player];
-          let isLastPlayer = nextAlivePlayer(player) === firstPlayer;
-          let canWinTrick = cards[player].at(-1) > biggestCardOnBoard;
 
-          if (!needsToScore) {
-            // pas de pli à faire -> joue sa plus grande carde perdante
-            cardIndex = cards[player].findLastIndex(
-              (c) => c < biggestCardOnBoard
-            );
-            if (!isLastPlayer && cardIndex === -1) {
-              // si pas de carte perdante
-              // dernier joueur -> plus grande carte
-              // pas dernier joueur -> plus petite carte
-              cardIndex = 0;
-            }
-          } else {
-            // encore au moins un pli à faire
-            if (isLastPlayer && canWinTrick) {
-              // dernier joueur et peut gagner
-              if (bids[player] - tricks[player] >= 2) {
-                // doit faire plus d'un pli -> plus petite carte gagnante
-                cardIndex = cards[player].findIndex(
-                  (c) => c > biggestCardOnBoard
-                );
-              } else {
-                // doit faire un seul pli -> plus grande carte
-                cardIndex = -1;
-              }
-            } else {
-              // pas dernier joueur ou peut pas gagner -> plus petite carte
-              cardIndex = 0;
-            }
-          }
-          cardPlayed = cards[player].at(cardIndex);
+          // si aucun de ces cas -> le bot choisit une carte à jouer
+        } else {
+          const playTimeout = setTimeout(() => {
+            let cardIndex;
+            let cardPlayed;
+            let biggestCardOnBoard = Math.max(...cardsPlayed, 0);
+            let needsToScore = tricks[player] < bids[player];
+            let isLastPlayer = nextAlivePlayer(player) === firstPlayer;
+            let canWinTrick = cards[player].at(-1) > biggestCardOnBoard;
 
-          // si carte choisie = excuse
-          if (cardPlayed === 23) {
             if (!needsToScore) {
-              // si a fait ses plis -> excuse vaut 0
-              cardPlayed = 0;
+              // pas de pli à faire -> joue sa plus grande carde perdante
+              cardIndex = cards[player].findLastIndex(
+                (c) => c < biggestCardOnBoard
+              );
+              if (!isLastPlayer && cardIndex === -1) {
+                // si pas de carte perdante
+                // dernier joueur -> plus grande carte
+                // pas dernier joueur -> plus petite carte
+                cardIndex = 0;
+              }
             } else {
-              if (cards[player].at(-2) > biggestCardOnBoard) {
-                // si on peut gagner sans jouer l'excuse, on évite de jouer l'excuse
-                cardIndex = -2;
-                cardPlayed = cards[player].at(-2);
+              // encore au moins un pli à faire
+              if (isLastPlayer && canWinTrick) {
+                // dernier joueur et peut gagner
+                if (bids[player] - tricks[player] >= 2) {
+                  // doit faire plus d'un pli -> plus petite carte gagnante
+                  cardIndex = cards[player].findIndex(
+                    (c) => c > biggestCardOnBoard
+                  );
+                } else {
+                  // doit faire un seul pli -> plus grande carte
+                  cardIndex = -1;
+                }
               } else {
-                // si a pas fait tous ses plis -> excuse vaut 22
-                cardPlayed = 22;
+                // pas dernier joueur ou peut pas gagner -> plus petite carte
+                cardIndex = 0;
               }
             }
-          }
+            cardPlayed = cards[player].at(cardIndex);
 
-          console.log(`${names[player]} joue ${cardPlayed}`);
-          setHistory([`${names[player]} joue ${cardPlayed}`]);
+            // si carte choisie = excuse
+            if (cardPlayed === 23) {
+              if (!needsToScore) {
+                // si a fait ses plis -> excuse vaut 0
+                cardPlayed = 0;
+              } else {
+                if (cards[player].at(-2) > biggestCardOnBoard) {
+                  // si on peut gagner sans jouer l'excuse, on évite de jouer l'excuse
+                  cardIndex = -2;
+                  cardPlayed = cards[player].at(-2);
+                } else {
+                  // si a pas fait tous ses plis -> excuse vaut 22
+                  cardPlayed = 22;
+                }
+              }
+            }
 
-          let newCardsPlayed = [...cardsPlayed];
-          newCardsPlayed[player] = cardPlayed;
-          setCardsPlayed(newCardsPlayed);
+            let newCardsPlayed = [...cardsPlayed];
+            newCardsPlayed[player] = cardPlayed;
+            setCardsPlayed(newCardsPlayed);
 
-          let newCards = [...cards];
-          newCards[player] = [...newCards[player]];
-          newCards[player].splice(cardIndex, 1);
-          setCards(newCards);
+            let newCards = [...cards];
+            newCards[player] = [...newCards[player]];
+            newCards[player].splice(cardIndex, 1);
+            setCards(newCards);
 
-          setPlayer((p) => nextAlivePlayer(p));
-        }, 2000);
-        return () => {
-          clearTimeout(playTimeout);
-        };
+            console.log(`${names[player]} joue ${cardPlayed}`);
+            setHistory(`${names[player]} joue ${cardPlayed}`);
+            setPlayer((p) => nextAlivePlayer(p));
+          }, 2000);
+          return () => {
+            clearTimeout(playTimeout);
+          };
+        }
         break;
 
       // =============================================================================================
 
       case "finishTrick":
         let winner = cardsPlayed.indexOf(Math.max(...cardsPlayed));
-        console.log(`${names[winner]} gagne le pli`);
         let theTricks = [...tricks];
         theTricks[winner]++;
         setTricks(theTricks);
         setTimeout(() => {
+          console.log(`${names[winner]} gagne le pli`);
+          setHistory(`${names[winner]} gagne le pli`);
           if (cards[0].length === 0) {
             setStep("finishRound");
           } else {
@@ -238,7 +254,7 @@ export default function Game() {
             setPlayer(winner);
             setStep("playerPlay");
           }
-        }, 3000);
+        }, 2000);
         break;
 
       // =============================================================================================
@@ -246,32 +262,33 @@ export default function Game() {
       case "finishRound":
         const theLife = [...life];
         const theElimTurn = [...elimTurn];
+        const infoText = "Fin de la manche";
         for (let i = 0; i < startPlayersNb; i++) {
           if (life[i] > 0) {
             let damage = Math.abs(bids[i] - tricks[i]);
             if (damage > 0) {
               console.log(`${names[i]} perd ${damage} vie(s)`);
-            }
-            theLife[i] = Math.max(theLife[i] - damage, 0);
-            if (theLife[i] === 0) {
-              theElimTurn[i] = round;
-              setElimTurn(theElimTurn);
-              console.log(`${names[i]} est éliminé`);
-              if (i === 0) {
-                console.log("Vous avez perdu");
-                setScore({ names, life: theLife, elimTurn: theElimTurn });
-                navigate("/score");
+              infoText += `<br>${names[i]} perd ${damage} vie(s)`;
+              theLife[i] = Math.max(theLife[i] - damage, 0);
+              if (theLife[i] === 0) {
+                theElimTurn[i] = round;
+                setElimTurn(theElimTurn);
+                console.log(`${names[i]} est éliminé`);
+                infoText += `, il est éliminé`;
               }
             }
           }
         }
+        setHistory(infoText);
         setLife(theLife);
-        if (theLife.filter((item) => item > 0).length === 1) {
+        if (theLife[0] === 0) {
+          console.log("Vous avez perdu");
+          setScore({ names, life: theLife, elimTurn: theElimTurn });
+          navigate("/score");
+        } else if (theLife.filter((item) => item > 0).length === 1) {
           console.log("Vous avez gagné");
           setScore({ names, life: theLife, elimTurn: theElimTurn });
           navigate("/score");
-        } else if (theLife.filter((item) => item > 0).length === 0) {
-          console.log("Aucun gagnant");
         } else {
           let next = dealer;
           do {
@@ -316,6 +333,7 @@ export default function Game() {
     let theBids = [...bids];
     theBids[0] = myBid;
     setBids(theBids);
+    setHistory(`Vous annoncez ${myBid} pli${myBid > 1 ? "s" : ""}`);
     setPlayer((p) => nextAlivePlayer(p));
   };
 
@@ -342,6 +360,8 @@ export default function Game() {
     newCards[0] = [...newCards[0]];
     newCards[0].splice(cards[0].indexOf(myCard), 1);
     setCards(newCards);
+
+    setHistory(`Vous jouez ${myCard}`);
     setPlayer((p) => nextAlivePlayer(p));
   };
 
@@ -376,7 +396,11 @@ export default function Game() {
               )}
             </div>
 
-            <div className="history">{history}</div>
+            {history && (
+              <div className="history">
+                <div>{history}</div>
+              </div>
+            )}
 
             {askBid && (
               <div className="modal-back">

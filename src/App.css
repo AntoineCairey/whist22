@@ -210,11 +210,18 @@ h3 {
 }
 
 .history {
-  z-index: 2;
-  position: absolute;
-  background: lightpink;
-  padding: 10px;
-  margin: 30px;
-  border-radius: 5px;
-  border: 1px solid white;
+  display: flex;
+  justify-content: center;
+
+
+  div {
+    z-index: 2;
+    position: absolute;
+    background: white;
+    padding: 10px;
+    margin: 30px;
+    border-radius: 5px;
+    border: 1px solid white;
+    width: fit-content;
+  }
 }
