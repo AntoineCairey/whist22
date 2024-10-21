@@ -213,7 +213,6 @@ h3 {
   display: flex;
   justify-content: center;
 
-
   div {
     z-index: 2;
     position: absolute;
@@ -223,5 +222,6 @@ h3 {
     border-radius: 5px;
     border: 1px solid white;
     width: fit-content;
+    white-space: pre-line;
   }
 }

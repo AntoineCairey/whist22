@@ -100,11 +100,11 @@ export default function Game() {
 
           // si PJ doit parler -> on ne fait rien
         } else if (player === 0) {
-          setTimeout(() => {
+          setAskBid(true);
+          const myPlayTimeout = setTimeout(() => {
             setHistory("A vous de parler");
-            setAskBid(true);
-            return;
           }, 2000);
+          return () => clearTimeout(myPlayTimeout);
 
           // si joueur est mort -> on passe au suivant
         } else if (life[player] <= 0) {
@@ -133,9 +133,7 @@ export default function Game() {
             );
             setPlayer((p) => nextAlivePlayer(p));
           }, 2000);
-          return () => {
-            clearTimeout(bidTimeout);
-          };
+          return () => clearTimeout(bidTimeout);
         }
         break;
 
@@ -230,9 +228,7 @@ export default function Game() {
             setHistory(`${names[player]} joue ${cardPlayed}`);
             setPlayer((p) => nextAlivePlayer(p));
           }, 2000);
-          return () => {
-            clearTimeout(playTimeout);
-          };
+          return () => clearTimeout(playTimeout);
         }
         break;
 
@@ -262,13 +258,13 @@ export default function Game() {
       case "finishRound":
         const theLife = [...life];
         const theElimTurn = [...elimTurn];
-        const infoText = "Fin de la manche";
+        let infoText = "Fin de la manche";
         for (let i = 0; i < startPlayersNb; i++) {
           if (life[i] > 0) {
             let damage = Math.abs(bids[i] - tricks[i]);
             if (damage > 0) {
               console.log(`${names[i]} perd ${damage} vie(s)`);
-              infoText += `<br>${names[i]} perd ${damage} vie(s)`;
+              infoText += `\n${names[i]} perd ${damage} vie${damage > 1 ? "s" : ""}`;
               theLife[i] = Math.max(theLife[i] - damage, 0);
               if (theLife[i] === 0) {
                 theElimTurn[i] = round;
@@ -281,24 +277,27 @@ export default function Game() {
         }
         setHistory(infoText);
         setLife(theLife);
-        if (theLife[0] === 0) {
-          console.log("Vous avez perdu");
-          setScore({ names, life: theLife, elimTurn: theElimTurn });
-          navigate("/score");
-        } else if (theLife.filter((item) => item > 0).length === 1) {
-          console.log("Vous avez gagné");
-          setScore({ names, life: theLife, elimTurn: theElimTurn });
-          navigate("/score");
-        } else {
-          let next = dealer;
-          do {
-            next = dealer >= startPlayersNb - 1 ? 0 : next + 1;
-          } while (theLife[next] === 0);
-          setDealer(next);
-          setRound(round + 1);
-          let theCardsNb = 5 - (round % 5);
-          setStep("distributeCards");
-        }
+        const finishRoudTimeout = setTimeout(() => {
+          if (theLife[0] === 0) {
+            console.log("Vous avez perdu");
+            setScore({ names, life: theLife, elimTurn: theElimTurn });
+            navigate("/score");
+          } else if (theLife.filter((item) => item > 0).length === 1) {
+            console.log("Vous avez gagné");
+            setScore({ names, life: theLife, elimTurn: theElimTurn });
+            navigate("/score");
+          } else {
+            let next = dealer;
+            do {
+              next = dealer >= startPlayersNb - 1 ? 0 : next + 1;
+            } while (theLife[next] === 0);
+            setDealer(next);
+            setRound(round + 1);
+            let theCardsNb = 5 - (round % 5);
+            setStep("distributeCards");
+          }
+        }, 5000);
+        return () => clearTimeout(finishRoudTimeout);
         break;
 
       // =============================================================================================
