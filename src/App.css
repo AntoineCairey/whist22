@@ -9,12 +9,25 @@ body {
 
 #root {
   /* max-width: 1280px; */
-  margin: 0;
-  padding: 0;
-  text-align: center;
   --card-zoom: 1.5;
   --card-height: calc(var(--card-zoom) * 68px);
   --card-width: calc(var(--card-zoom) * 37px);
+  /* --light-green: rgb(56, 167, 104); */
+  --light-green: seagreen;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  text-align: center;
+  background: seagreen;
+  color: white;
+
+  &:not(:has(.game)) {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 img {
@@ -25,8 +38,14 @@ img {
 
 button {
   cursor: pointer;
-  margin: 5px;
+  margin: 10px 0;
+  padding: 5px 10px;
   font-size: 16px;
+  background: white;
+  color: black;
+  border: none;
+  /* border: 2px solid white; */
+  border-radius: 5px;
 }
 
 h3 {
@@ -35,6 +54,7 @@ h3 {
 
 .active-player {
   background-color: white;
+  color: black;
   border-radius: 5px;
 }
 
@@ -156,8 +176,21 @@ h3 {
 
   .modal {
     background: white;
+    color: black;
     border-radius: 5px;
     padding: 20px;
+
+    button {
+      background: seagreen;
+      color: white;
+      margin: 10px 5px;
+      /* border-radius: 50%; */
+
+      &:disabled {
+        background: lightgrey;
+        /* color: black; */
+      }
+    }
   }
 }
 
@@ -198,7 +231,7 @@ h3 {
   justify-content: space-around;
   align-items: center;
   height: 50px;
-  background: beige;
+  background: var(--light-green);
 }
 
 .game {
@@ -206,7 +239,7 @@ h3 {
   height: calc(100vh - 50px);
   position: absolute;
   left: 0;
-  background: seagreen;
+  background: var(--light-green);
 }
 
 .history {
@@ -216,11 +249,12 @@ h3 {
   div {
     z-index: 2;
     position: absolute;
-    background: white;
+    background: rgb(189, 255, 218);
+    color: black;
     padding: 10px;
     margin: 30px;
     border-radius: 5px;
-    border: 1px solid white;
+    border: 2px solid white;
     width: fit-content;
     white-space: pre-line;
   }

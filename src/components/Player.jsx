@@ -2,17 +2,8 @@ import Card from "./Card";
 
 export default function Player({ id, gameData, handleCardClick }) {
   //console.log(gameData);
-  const {
-    names,
-    dealer,
-    player,
-    life,
-    bids,
-    tricks,
-    cards,
-    elimTurn,
-    cardsNb,
-  } = gameData;
+  const { names, dealer, player, life, bids, tricks, cards, elimTurn, cardsNb } =
+    gameData;
 
   const position = ["bottom", "left", "top", "right"];
 
@@ -25,7 +16,6 @@ export default function Player({ id, gameData, handleCardClick }) {
               {names[id]} {dealer === id && "♟️"}
             </strong>
             <div>{life && life[id]} ❤️</div>
-            {/* <div>Mise : {bids[id] ?? "?"}</div> */}
             <div>
               {tricks && tricks[id]} / {bids[id] ?? "?"} 🃏
             </div>
@@ -35,7 +25,7 @@ export default function Player({ id, gameData, handleCardClick }) {
               <Card
                 key={card}
                 isHorizontal={id === 1 || id === 3}
-                isVisible={/* (id === 0) !== (cardsNb === 1) */ true}
+                isVisible={(id === 0) !== (cardsNb === 1)}
                 isClickable={id === 0 && player === 0}
                 value={card}
                 handleCardClick={handleCardClick}
