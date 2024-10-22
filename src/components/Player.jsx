@@ -2,17 +2,8 @@ import Card from "./Card";
 
 export default function Player({ id, gameData, handleCardClick }) {
   //console.log(gameData);
-  const {
-    names,
-    dealer,
-    player,
-    life,
-    bids,
-    tricks,
-    cards,
-    elimTurn,
-    cardsNb,
-  } = gameData;
+  const { names, dealer, player, life, bids, tricks, cards, elimTurn, cardsNb } =
+    gameData;
 
   const position = ["bottom", "left", "top", "right"];
 
@@ -20,13 +11,14 @@ export default function Player({ id, gameData, handleCardClick }) {
     <div className={`player ${position[id]}`}>
       {life[id] > 0 ? (
         <>
-          <div className="scores">
-            <strong className={player === id ? "active-player" : ""}>
-              {names[id]} {dealer === id && "(D)"}
+          <div className={`scores${player === id ? " active-player" : ""}`}>
+            <strong>
+              {names[id]} {dealer === id && "♟️"}
             </strong>
-            <div>Vies : {life && life[id]}</div>
-            <div>Mise : {bids[id] ?? "?"}</div>
-            <div>Plis : {tricks && tricks[id]}</div>
+            <div>{life && life[id]} ❤️</div>
+            <div>
+              {tricks && tricks[id]} / {bids[id] ?? "?"} 🃏
+            </div>
           </div>
           <div className={`hand ${position[id]}`}>
             {cards[id].map((card) => (
