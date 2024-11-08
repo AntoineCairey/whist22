@@ -20,6 +20,7 @@ body {
   text-align: center;
   background: seagreen;
   color: white;
+  font-size: 16px;
 
   &:not(:has(.game)) {
     padding: 20px;
@@ -75,7 +76,7 @@ h3 {
   width: 100%;
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  /* font-size: 16px; */
 
   &.top {
     flex-direction: column-reverse;
@@ -178,8 +179,8 @@ h3 {
     background: white;
     color: black;
     border-radius: 10px;
-    padding: 30px;
-    max-width: 300px;
+    padding: 20px;
+    max-width: 280px;
 
     h3 {
       margin-bottom: 15px;

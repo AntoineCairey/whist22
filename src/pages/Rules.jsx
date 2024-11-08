@@ -5,7 +5,7 @@ export default function Rules() {
 
   return (
     <div className="rules">
-      <button onClick={() => navigate("/")}>🏠 Menu</button>
+      <button onClick={() => navigate("/")}>⬅️ Retour</button>
       <br />
       <br />
 

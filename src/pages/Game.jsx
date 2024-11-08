@@ -372,7 +372,7 @@ export default function Game() {
   return (
     <>
       <div className="info">
-        <button onClick={() => navigate("/")}>🏠 Menu</button>
+        <button onClick={() => navigate("/")}>⬅️ Quitter</button>
         <div>
           Manche {round} ({cardsNb}🃏)
         </div>

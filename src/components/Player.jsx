@@ -17,7 +17,7 @@ export default function Player({ id, gameData, handleCardClick }) {
             </strong>
             <div>{life && life[id]} ❤️</div>
             <div>
-              {tricks && tricks[id]} / {bids[id] ?? "?"} 🃏
+              {!bids.includes(null) && `${tricks[id]} 🃏 / `}{bids[id] ?? "?"} 📣
             </div>
           </div>
           <div className={`hand ${position[id]}`}>
