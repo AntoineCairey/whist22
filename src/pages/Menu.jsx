@@ -11,9 +11,9 @@ export default function Menu() {
       <br />
       <div>Jouez contre 3 bots et tentez d'être le dernier en jeu.</div>
       <br />
-      <button onClick={() => navigate("/rules")}>📖 Lire les règles</button>
+      <button className="menu-button" onClick={() => navigate("/rules")}>📖 Lire les règles</button>
       <br />
-      <button onClick={() => navigate("/game")}>🃏 Jouer</button>
+      <button className="menu-button" onClick={() => navigate("/game")}>🃏 Jouer</button>
       <br />
     </>
   );

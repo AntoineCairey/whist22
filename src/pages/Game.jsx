@@ -52,6 +52,7 @@ export default function Game() {
 
   useEffect(() => {
     switch (step) {
+      // Début de la partie
       case "startGame":
         setLife(startLife);
         setDealer(Math.floor(Math.random() * startPlayersNb));
@@ -61,6 +62,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Distribution des cartes
       case "distributeCards":
         const newDealer = nextAlivePlayer(dealer);
         setDealer(newDealer);
@@ -96,6 +98,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Un joueur choisit son annonce
       case "playerBid":
         // si fin des annonces -> début 1er pli
         if (player === firstPlayer && bids[player] != null) {
@@ -145,6 +148,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Un joueur choisit la carte à jouer
       case "playerPlay":
         // si fin du pli -> déterminer le gagnant
         if (player === firstPlayer && cardsPlayed[player] != null) {
@@ -239,6 +243,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Fin du pli
       case "finishTrick":
         let winner = cardsPlayed.indexOf(Math.max(...cardsPlayed));
         let theTricks = [...tricks];
@@ -259,6 +264,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Fin de la manche
       case "finishRound":
         const theLife = [...life];
         const theElimTurn = [...elimTurn];
