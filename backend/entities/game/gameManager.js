@@ -22,6 +22,14 @@ const getGames = async (req, res) => {
           },
         },
         { $unwind: "$user" },
+        {
+          $project: {
+            userId: 1,
+            isVictory: 1,
+            creationDate: 1,
+            username: "$user.username",
+          },
+        },
       ])
       .toArray();
     res.status(200).json(result);
@@ -48,6 +56,14 @@ const getGame = async (req, res) => {
             },
           },
           { $unwind: "$user" },
+          {
+            $project: {
+              userId: 1,
+              isVictory: 1,
+              creationDate: 1,
+              username: "$user.username",
+            },
+          },
         ])
         .next();
       res.status(200).json(result);
@@ -114,7 +130,7 @@ const deleteGame = async (req, res) => {
 };
 
 const getGamesByUser = async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.params.id ?? req.user.userId;
   if (ObjectId.isValid(userId)) {
     try {
       const result = await db
@@ -130,6 +146,14 @@ const getGamesByUser = async (req, res) => {
             },
           },
           { $unwind: "$user" },
+          {
+            $project: {
+              userId: 1,
+              isVictory: 1,
+              creationDate: 1,
+              username: "$user.username",
+            },
+          },
         ])
         .toArray();
       res.status(200).json(result);

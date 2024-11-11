@@ -1,34 +1,41 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-export default function Signup() {
+export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    username: "",
   });
   const [error, setError] = useState("");
+  const { getUserInfos } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSignup = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/signup`, formData);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/login`,
+        formData
+      );
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      getUserInfos();
       navigate("/");
     } catch (error) {
-      setError("Erreur lors de la création de compte");
+      setError("Identifiants incorrects");
     }
   };
 
   return (
     <>
-      <h2>Crée ton compte</h2>
-      <form onSubmit={handleSignup}>
+      <h2>Connecte-toi</h2>
+      <form onSubmit={handleLogin}>
         <label htmlFor="email">Email </label>
         <input
           type="email"
@@ -44,15 +51,6 @@ export default function Signup() {
           name="password"
           id="password"
           value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <label htmlFor="username">Pseudo</label>
-        <input
-          type="text"
-          name="username"
-          id="username"
-          value={formData.username}
           onChange={handleChange}
           required
         />

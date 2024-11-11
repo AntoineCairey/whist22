@@ -11,7 +11,10 @@ initializeDb();
 
 const getUsers = async (req, res) => {
   try {
-    const result = await db.collection("users").find().toArray();
+    const result = await db
+      .collection("users")
+      .find({}, { projection: { password: 0 } })
+      .toArray();
     res.status(200).json(result);
   } catch (err) {
     console.error(err);
@@ -20,12 +23,16 @@ const getUsers = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.params.id ?? req.user.userId;
+  console.log(userId);
   if (ObjectId.isValid(userId)) {
     try {
       const result = await db
         .collection("users")
-        .findOne({ _id: ObjectId.createFromHexString(userId) });
+        .findOne(
+          { _id: ObjectId.createFromHexString(userId) },
+          { projection: { password: 0 } }
+        );
       res.status(200).json(result);
     } catch (err) {
       console.error(err);
@@ -132,10 +139,10 @@ const verifyToken = (req, res, next) => {
       return res.status(401).json({ error: "Authorization token missing" });
     } else {
       const token = authHeader.split(" ")[1];
-      console.log(token);
+      //console.log(token);
       const decoded = jwt.verify(token, process.env.APP_SECRET);
       req.user = decoded;
-      console.log(decoded);
+      //console.log(decoded);
       next();
     }
   } catch (err) {
