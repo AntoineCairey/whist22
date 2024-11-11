@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
@@ -35,6 +35,11 @@ export default function Login() {
   return (
     <>
       <h2>Connecte-toi</h2>
+      <br />
+      <div>
+        Tu n'as pas de compte ? <Link to="/signup">Crée-en un</Link>
+      </div>
+      <br />
       <form onSubmit={handleLogin}>
         <label htmlFor="email">Email </label>
         <input

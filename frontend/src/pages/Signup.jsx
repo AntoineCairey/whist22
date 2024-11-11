@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -28,6 +28,11 @@ export default function Signup() {
   return (
     <>
       <h2>Crée ton compte</h2>
+      <br />
+      <div>
+        Tu as déjà un compte ? <Link to="/login">Connecte-toi</Link>
+      </div>
+      <br />
       <form onSubmit={handleSignup}>
         <label htmlFor="email">Email </label>
         <input

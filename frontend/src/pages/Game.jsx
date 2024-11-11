@@ -287,10 +287,10 @@ export default function Game() {
         setHistory(infoText);
         setLife(theLife);
         const finishRoundTimeout = setTimeout(() => {
-          if (theLife[0] === 0) {
-            setScore({ names, life: theLife, elimTurn: theElimTurn });
-            navigate("/score");
-          } else if (theLife.filter((item) => item > 0).length === 1) {
+          if (
+            theLife[0] === 0 ||
+            theLife.filter((item) => item > 0).length === 1
+          ) {
             setScore({ names, life: theLife, elimTurn: theElimTurn });
             navigate("/score");
           } else {

@@ -154,6 +154,7 @@ const getGamesByUser = async (req, res) => {
               username: "$user.username",
             },
           },
+          { $sort: { creationDate: -1 } },
         ])
         .toArray();
       res.status(200).json(result);
