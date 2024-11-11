@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ export default function Signup() {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { getUserInfos } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,15 +20,23 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/signup`, formData);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/signup`,
+        formData
+      );
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      getUserInfos();
       navigate("/");
     } catch (error) {
+      console.log(error);
       setError("Erreur lors de la création de compte");
     }
   };
 
   return (
     <>
+      <button onClick={() => navigate("/")}>⬅️ Retour</button>
       <h2>Crée ton compte</h2>
       <br />
       <div>

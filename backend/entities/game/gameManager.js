@@ -21,13 +21,14 @@ const getGames = async (req, res) => {
             as: "user",
           },
         },
-        { $unwind: "$user" },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
         {
           $project: {
             userId: 1,
-            isVictory: 1,
-            creationDate: 1,
             username: "$user.username",
+            creationDate: 1,
+            isVictory: 1,
+            points: 1,
           },
         },
       ])
@@ -55,13 +56,14 @@ const getGame = async (req, res) => {
               as: "user",
             },
           },
-          { $unwind: "$user" },
+          { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
           {
             $project: {
               userId: 1,
-              isVictory: 1,
-              creationDate: 1,
               username: "$user.username",
+              creationDate: 1,
+              isVictory: 1,
+              points: 1,
             },
           },
         ])
@@ -80,7 +82,9 @@ const createGame = async (req, res) => {
   try {
     const newGame = req.body;
     newGame.creationDate = new Date();
-    newGame.userId = ObjectId.createFromHexString(newGame.userId);
+    newGame.userId = ObjectId.isValid(newGame.userId)
+      ? ObjectId.createFromHexString(newGame.userId)
+      : null;
     const result = await db.collection("games").insertOne(newGame);
     console.log(result);
     res.status(201).json({ insertedId: result.insertedId });
@@ -145,13 +149,14 @@ const getGamesByUser = async (req, res) => {
               as: "user",
             },
           },
-          { $unwind: "$user" },
+          { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
           {
             $project: {
               userId: 1,
-              isVictory: 1,
-              creationDate: 1,
               username: "$user.username",
+              creationDate: 1,
+              isVictory: 1,
+              points: 1,
             },
           },
           { $sort: { creationDate: -1 } },

@@ -34,10 +34,11 @@ export default function Login() {
 
   return (
     <>
+      <button onClick={() => navigate("/")}>⬅️ Retour</button>
       <h2>Connecte-toi</h2>
       <br />
       <div>
-        Tu n'as pas de compte ? <Link to="/signup">Crée-en un</Link>
+        Tu n'as pas de compte ? <Link to="/signup">Crées-en un</Link>
       </div>
       <br />
       <form onSubmit={handleLogin}>

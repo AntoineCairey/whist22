@@ -1,10 +1,11 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const { user, logout } = useContext(AuthContext);
   const myGames = useLoaderData();
+  const navigate = useNavigate();
 
   return (
     user && (
@@ -18,8 +19,9 @@ export default function Profile() {
           {myGames &&
             myGames.map((game) => (
               <li key={game._id}>
-                {new Date(game.creationDate).toLocaleString()} -{" "}
-                {game.isVictory === "true" ? "Victoire" : "Défaite"}
+                {new Date(game.creationDate).toLocaleString()} /{" "}
+                {game.isVictory ? "Victoire" : "Défaite"} /{" "}
+                {game.points} points
               </li>
             ))}
         </ul>

@@ -1,12 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Player from "../components/Player";
 import Card from "../components/Card";
+import api from "../services/ApiService";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Game() {
+  const { user } = useContext(AuthContext);
+
   // parametres modifiables :
-  const startCardsNb = 5; // nb de cartes en main au 1er tour (5 par défaut)
-  const startLife = [3, 3, 3, 3]; // points de vie en début de partie (3 chacun par défaut)
+  const startCardsNb = 2; // nb de cartes en main au 1er tour (5 par défaut)
+  const startLife = [1, 1, 0, 0]; // points de vie en début de partie (3 chacun par défaut)
 
   const navigate = useNavigate();
   const startPlayersNb = 4;
@@ -286,12 +290,24 @@ export default function Game() {
         }
         setHistory(infoText);
         setLife(theLife);
-        const finishRoundTimeout = setTimeout(() => {
+        const finishRoundTimeout = setTimeout(async () => {
           if (
             theLife[0] === 0 ||
             theLife.filter((item) => item > 0).length === 1
           ) {
-            setScore({ names, life: theLife, elimTurn: theElimTurn });
+            const isVictory = theLife[0] !== 0;
+            const basePoints = isVictory ? 50 : -20;
+            const bonusPoints = theLife[0] * 50;
+            const malusPoints = (theLife[1] + theLife[2] + theLife[3]) * -10;
+            const points = basePoints + bonusPoints + malusPoints;
+            const score = { names, life: theLife, elimTurn: theElimTurn };
+            setScore(score);
+            await api.post("/games", {
+              userId: user?._id,
+              isVictory,
+              points,
+              score,
+            });
             navigate("/score");
           } else {
             setRound(round + 1);

@@ -55,8 +55,12 @@ const createUser = async (req, res) => {
       newUser.creationDate = new Date();
       newUser.password = await bcrypt.hash(newUser.password, 10);
       const result = await db.collection("users").insertOne(newUser);
-      console.log(result);
-      res.status(201).json({ insertedId: result.insertedId });
+      const token = jwt.sign(
+        { userId: result.insertedId },
+        process.env.APP_SECRET,
+        { expiresIn: "1h" }
+      );
+      res.status(201).json({ token });
     }
   } catch (err) {
     console.error(err);
@@ -117,12 +121,9 @@ const login = async (req, res) => {
       if (!isPasswordValid) {
         res.status(401).json({ error: "Invalid password" });
       } else {
-        const token = jwt.sign(
-          { userId: user._id, username: user.username },
-          process.env.APP_SECRET,
-          { expiresIn: "1h" }
-        );
-        console.log(token);
+        const token = jwt.sign({ userId: user._id }, process.env.APP_SECRET, {
+          expiresIn: "1h",
+        });
         res.status(200).json({ token });
       }
     }
