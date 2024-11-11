@@ -5,7 +5,7 @@ const gameManager = require("./entities/game/gameManager");
 const router = express.Router();
 router.use(["/users", "/games"], userManager.verifyToken);
 
-router.post("/register", userManager.createUser);
+router.post("/signup", userManager.createUser);
 router.post("/login", userManager.login);
 
 router.get("/users", userManager.getUsers);

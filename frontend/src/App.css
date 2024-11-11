@@ -266,3 +266,13 @@ h3:not(.rules h3) {
   border-radius: 10px;
   font-size: 18px;
 }
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  input {
+    margin-bottom: 15px;
+  }
+}

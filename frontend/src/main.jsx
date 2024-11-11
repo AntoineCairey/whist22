@@ -6,6 +6,7 @@ import Game from "./pages/Game.jsx";
 import Menu from "./pages/Menu.jsx";
 import Score from "./pages/Score.jsx";
 import Rules from "./pages/Rules.jsx";
+import Signup from "./pages/Signup.jsx";
 import "./App.css";
 
 const router = createBrowserRouter([
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Menu />,
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
       },
       {
         path: "/game",
