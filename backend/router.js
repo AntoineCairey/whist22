@@ -1,39 +1,23 @@
 const express = require("express");
-const {
-  getUsers,
-  getUser,
-  createUser,
-  updateUser,
-  deleteUser,
-  login,
-  verifyToken,
-} = require("./entities/user/userManager");
-const {
-  getGames,
-  getGame,
-  createGame,
-  updateGame,
-  deleteGame,
-  getGamesByUser,
-} = require("./entities/game/gameManager");
+const userManager = require("./entities/user/userManager");
+const gameManager = require("./entities/game/gameManager");
 
 const router = express.Router();
-router.use(["/users", "/games"], verifyToken);
+router.use(["/users", "/games"], userManager.verifyToken);
 
-router.get("/", (req, res) => res.send("Coucou"));
-router.post("/register", createUser);
-router.post("/login", login);
+router.post("/register", userManager.createUser);
+router.post("/login", userManager.login);
 
-router.get("/users", getUsers);
-router.get("/users/:id", getUser);
-router.patch("/users/:id", updateUser);
-router.delete("/users/:id", deleteUser);
+router.get("/users", userManager.getUsers);
+router.get("/users/:id", userManager.getUser);
+router.patch("/users/:id", userManager.updateUser);
+router.delete("/users/:id", userManager.deleteUser);
 
-router.get("/games", getGames);
-router.get("/games/:id", getGame);
-router.post("/games", createGame);
-router.patch("/games/:id", updateGame);
-router.delete("/games/:id", deleteGame);
-router.get("/users/:id/games", getGamesByUser);
+router.get("/games", gameManager.getGames);
+router.get("/games/:id", gameManager.getGame);
+router.post("/games", gameManager.createGame);
+router.patch("/games/:id", gameManager.updateGame);
+router.delete("/games/:id", gameManager.deleteGame);
+router.get("/users/:id/games", gameManager.getGamesByUser);
 
 module.exports = router;
