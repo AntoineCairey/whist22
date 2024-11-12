@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { ObjectId } = require("mongodb");
-const connectDb = require("../../db");
+const connectDb = require("../db");
 
 let db = null;
 const initializeDb = async () => {
@@ -53,6 +53,7 @@ const createUser = async (req, res) => {
       res.status(409).json({ error: "Email already in use" });
     } else {
       newUser.creationDate = new Date();
+      newUser.points = 500;
       newUser.password = await bcrypt.hash(newUser.password, 10);
       const result = await db.collection("users").insertOne(newUser);
       const token = jwt.sign(

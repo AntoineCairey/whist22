@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const connectDb = require("../../db");
+const connectDb = require("../db");
 
 let db = null;
 const initializeDb = async () => {
@@ -85,9 +85,23 @@ const createGame = async (req, res) => {
     newGame.userId = ObjectId.isValid(newGame.userId)
       ? ObjectId.createFromHexString(newGame.userId)
       : null;
-    const result = await db.collection("games").insertOne(newGame);
+    const result1 = await db.collection("games").insertOne(newGame);
+
+    // update user points
+    if (newGame.userId) {
+      const result2 = await db
+        .collection("users")
+        .updateOne(
+          { _id: newGame.userId },
+          {
+            $set: {
+              points: { $add: ["$points", newGame.points] },
+            },
+          }
+        );
+    }
     console.log(result);
-    res.status(201).json({ insertedId: result.insertedId });
+    res.status(201).json({ insertedId: result1.insertedId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Could not create data" });

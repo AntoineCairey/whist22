@@ -1,6 +1,6 @@
 const express = require("express");
-const userManager = require("./entities/user/userManager");
-const gameManager = require("./entities/game/gameManager");
+const userManager = require("./managers/userManager");
+const gameManager = require("./managers/gameManager");
 
 const router = express.Router();
 router.use(["/users", "/games"], userManager.verifyToken);
