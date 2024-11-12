@@ -36,11 +36,14 @@ export default function Signup() {
 
   return (
     <>
-      <button onClick={() => navigate("/")}>⬅️ Retour</button>
+      <button className="back-button" onClick={() => navigate("/")}>
+        ⬅️ Retour
+      </button>
       <h2>Crée ton compte</h2>
       <br />
       <div>
-        Tu as déjà un compte ? <Link to="/login">Connecte-toi</Link>
+        Tu as déjà un compte ? <br />
+        <Link to="/login">Connecte-toi</Link>
       </div>
       <br />
       <form onSubmit={handleSignup}>
@@ -71,7 +74,7 @@ export default function Signup() {
           onChange={handleChange}
           required
         />
-        <button type="submit">Valider</button>
+        <button type="submit">✅ Valider</button>
         {error && <p>{error}</p>}
       </form>
     </>

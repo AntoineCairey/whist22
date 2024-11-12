@@ -10,17 +10,25 @@ export default function Profile() {
   return (
     user && (
       <>
-        <button onClick={() => navigate("/")}>⬅️ Retour</button>
-        <h2>{user.username}</h2>
-        <div>
-          Créé le {new Date(user.creationDate).toLocaleDateString()}
+        <button className="back-button" onClick={() => navigate("/")}>
+          ⬅️ Retour
+        </button>
+        <h2>Mon profil</h2>
+        <div className="user-infos">
+          <div>
+            <strong>{user.username}</strong>
+          </div>
+          <br />
+          <div>{user.email}</div>
+          <div>créé le {new Date(user.creationDate).toLocaleDateString()}</div>
+          <br />
+          <div>{user.points} points</div>
+          <div>{myGames.length} parties jouées</div>
+          <br />
         </div>
-        <div>{user.email}</div>
-        <div>{user.points} points</div>
-        <div>{myGames.length} parties jouées</div>
 
-        <h4>Parties précédentes</h4>
-        <ul>
+        <h3>Parties précédentes</h3>
+        {/* <ul>
           {myGames &&
             myGames.map((game) => (
               <li key={game._id}>
@@ -28,8 +36,29 @@ export default function Profile() {
                 {game.isVictory ? "Victoire" : "Défaite"} / {game.points} points
               </li>
             ))}
-        </ul>
-        <button onClick={logout}>Me déconnecter</button>
+        </ul> */}
+
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Résultat</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            {myGames &&
+              myGames.map((game) => (
+                <tr key={game._id}>
+                  <td>{new Date(game.creationDate).toLocaleDateString()}</td>
+                  <td>{game.isVictory ? "Victoire" : "Défaite"}</td>
+                  <td>{game.points}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+
+        <button onClick={logout}>❌ Me déconnecter</button>
       </>
     )
   );

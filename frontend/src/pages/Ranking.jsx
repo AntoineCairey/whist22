@@ -6,16 +6,41 @@ export default function Ranking() {
 
   return (
     <>
-      <button onClick={() => navigate("/")}>⬅️ Retour</button>
+      <button className="back-button" onClick={() => navigate("/")}>
+        ⬅️ Retour
+      </button>
       <h2>Classement général</h2>
-      <ul>
+      {/* <ul>
         {users &&
           users.map((user) => (
             <li key={user._id}>
-              {user.username} / {user.points} points / {user.numberOfGames} parties
+              {user.username} / {user.points} points / {user.numberOfGames}{" "}
+              parties
             </li>
           ))}
-      </ul>
+      </ul> */}
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Joueur</th>
+            <th>Score</th>
+            <th>Parties</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users &&
+            users.map((user, index) => (
+              <tr key={user._id}>
+                <td>{index + 1}</td>
+                <td>{user.username}</td>
+                <td>{user.points}</td>
+                <td>{user.numberOfGames}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
     </>
   );
 }
