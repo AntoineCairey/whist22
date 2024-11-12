@@ -7,6 +7,7 @@ router.use(["/users", "/games"], userManager.verifyToken);
 
 router.post("/signup", userManager.createUser);
 router.post("/login", userManager.login);
+router.get("/bestusers", userManager.getBestUsers)
 
 router.get("/users", userManager.getUsers);
 router.get("/users/me", userManager.getUser);

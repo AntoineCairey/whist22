@@ -13,6 +13,7 @@ import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import api from "./services/ApiService.jsx";
+import Ranking from "./pages/Ranking.jsx";
 
 const router = createBrowserRouter([
   {
@@ -51,6 +52,11 @@ const router = createBrowserRouter([
         path: "/profile",
         element: <Profile />,
         loader: async () => (await api.get("/users/me/games")).data,
+      },
+      {
+        path: "/ranking",
+        element: <Ranking />,
+        loader: async () => (await api.get("/bestusers")).data,
       },
     ],
   },

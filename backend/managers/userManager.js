@@ -153,6 +153,38 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+const getBestUsers = async (req, res) => {
+  try {
+    const result = await db
+      .collection("users")
+      .aggregate([
+        {
+          $lookup: {
+            from: "games",
+            localField: "_id",
+            foreignField: "userId",
+            as: "games",
+          },
+        },
+        {
+          $project: {
+            username: 1,
+            points: 1,
+            numberOfGames: { $size: "$games" },
+          },
+        },
+        { $match: { numberOfGames: { $gte: 1 } } },
+        { $sort: { points: -1 } },
+        { $limit: 5 },
+      ])
+      .toArray();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not fetch the data" });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
@@ -161,4 +193,5 @@ module.exports = {
   deleteUser,
   login,
   verifyToken,
+  getBestUsers,
 };

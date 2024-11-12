@@ -12,7 +12,12 @@ export default function Profile() {
       <>
         <button onClick={() => navigate("/")}>⬅️ Retour</button>
         <h2>{user.username}</h2>
+        <div>
+          Créé le {new Date(user.creationDate).toLocaleDateString()}
+        </div>
         <div>{user.email}</div>
+        <div>{user.points} points</div>
+        <div>{myGames.length} parties jouées</div>
 
         <h4>Parties précédentes</h4>
         <ul>
@@ -20,8 +25,7 @@ export default function Profile() {
             myGames.map((game) => (
               <li key={game._id}>
                 {new Date(game.creationDate).toLocaleString()} /{" "}
-                {game.isVictory ? "Victoire" : "Défaite"} /{" "}
-                {game.points} points
+                {game.isVictory ? "Victoire" : "Défaite"} / {game.points} points
               </li>
             ))}
         </ul>
