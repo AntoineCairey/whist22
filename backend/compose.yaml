@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  express:
+    image: antoinecairey/whist22-backend-linux:1.0
+    container_name: whist22-backend
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3001:3000"
+    environment:
+      APP_PORT: ${APP_PORT}
+      APP_SECRET: ${APP_SECRET}
+      MONGO_URI: ${MONGO_URI}
+    depends_on:
+      - mongo
+    networks:
+      - caddy_proxy
+
+  mongo:
+    image: mongo:latest
+    container_name: whist22-db
+    restart: always
+    networks:
+      - caddy_proxy
+    volumes:
+      - db_data:/data/db
+    ports:
+      - "27017:27017"
+      
+networks:
+  caddy_proxy:
+    external: true
+
+volumes:
+  db_data:
+    driver: local

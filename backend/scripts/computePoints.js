@@ -1,6 +1,5 @@
 const { MongoClient } = require("mongodb");
-const uri = "mongodb://localhost:27017";
-const dbName = "whist22";
+const uri = process.env.MONGO_URI;
 
 const userStart = 500;
 const victoryBase = 50;
@@ -13,7 +12,7 @@ const computePoints = async () => {
   try {
     await client.connect();
     console.log("Connected to MongoDB");
-    const db = client.db(dbName);
+    const db = client.db();
 
     // Compute game points (v2)
     const gamePoints = await db
