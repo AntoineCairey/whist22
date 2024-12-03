@@ -6,11 +6,11 @@ import api from "../services/ApiService";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Game() {
-  const { user } = useContext(AuthContext);
+  const { user, getUserInfos } = useContext(AuthContext);
 
   // parametres modifiables :
-  const startCardsNb = 2; // nb de cartes en main au 1er tour (5 par défaut)
-  const startLife = [1, 1, 0, 0]; // points de vie en début de partie (3 chacun par défaut)
+  const startCardsNb = 5; // nb de cartes en main au 1er tour (5 par défaut)
+  const startLife = [3, 3, 3, 3]; // points de vie en début de partie (3 chacun par défaut)
 
   const navigate = useNavigate();
   const startPlayersNb = 4;
@@ -52,6 +52,7 @@ export default function Game() {
     cards,
     elimTurn,
     cardsNb,
+    step,
   };
 
   useEffect(() => {
@@ -308,6 +309,7 @@ export default function Game() {
               points,
               score,
             });
+            getUserInfos();
             navigate("/score");
           } else {
             setRound(round + 1);

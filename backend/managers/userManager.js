@@ -24,7 +24,7 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   const userId = req.params.id ?? req.user.userId;
-  console.log(userId);
+  //console.log(userId);
   if (ObjectId.isValid(userId)) {
     try {
       const result = await db
@@ -175,7 +175,7 @@ const getBestUsers = async (req, res) => {
         },
         { $match: { numberOfGames: { $gte: 1 } } },
         { $sort: { points: -1 } },
-        { $limit: 5 },
+        { $limit: 10 },
       ])
       .toArray();
     res.status(200).json(result);

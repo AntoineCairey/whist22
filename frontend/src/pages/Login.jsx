@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import api from "../services/ApiService";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -19,10 +19,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/login`,
-        formData
-      );
+      const response = await api.post("/login", formData);
       const token = response.data.token;
       localStorage.setItem("token", token);
       getUserInfos();
@@ -34,7 +31,9 @@ export default function Login() {
 
   return (
     <>
-      <button className="back-button" onClick={() => navigate("/")}>⬅️ Retour</button>
+      <button className="back-button" onClick={() => navigate("/")}>
+        ⬅️ Retour
+      </button>
       <h2>Connecte-toi</h2>
       <div>
         Tu n'as pas de compte ? <br />

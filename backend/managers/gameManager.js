@@ -93,14 +93,10 @@ const createGame = async (req, res) => {
         .collection("users")
         .updateOne(
           { _id: newGame.userId },
-          {
-            $set: {
-              points: { $add: ["$points", newGame.points] },
-            },
-          }
+          { $inc: { points: newGame.points } }
         );
     }
-    console.log(result);
+
     res.status(201).json({ insertedId: result1.insertedId });
   } catch (err) {
     console.error(err);

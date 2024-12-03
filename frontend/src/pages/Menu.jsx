@@ -31,7 +31,7 @@ export default function Menu() {
         🏆 Classement général
       </button>
       <button className="menu-button" onClick={() => navigate("/rules")}>
-        📖 Lire les règles
+        📖 Règles du jeu
       </button>
     </div>
   );

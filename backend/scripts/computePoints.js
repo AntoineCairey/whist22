@@ -1,5 +1,4 @@
 const { MongoClient } = require("mongodb");
-const uri = process.env.MONGO_URI;
 
 const userStart = 500;
 const victoryBase = 50;
@@ -8,11 +7,11 @@ const defeatBase = -20;
 const defeatLifeMalus = -10;
 
 const computePoints = async () => {
-  const client = new MongoClient(uri);
+  const client = new MongoClient(process.env.MONGO_URI);
   try {
     await client.connect();
     console.log("Connected to MongoDB");
-    const db = client.db();
+    const db = client.db(process.env.MONGO_DATABASE);
 
     // Compute game points (v2)
     const gamePoints = await db

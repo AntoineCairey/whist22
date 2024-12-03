@@ -28,16 +28,6 @@ export default function Profile() {
         </div>
 
         <h3>Parties précédentes</h3>
-        {/* <ul>
-          {myGames &&
-            myGames.map((game) => (
-              <li key={game._id}>
-                {new Date(game.creationDate).toLocaleString()} /{" "}
-                {game.isVictory ? "Victoire" : "Défaite"} / {game.points} points
-              </li>
-            ))}
-        </ul> */}
-
         <table>
           <thead>
             <tr>

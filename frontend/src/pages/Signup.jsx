@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import api from "../services/ApiService";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -20,10 +20,7 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/signup`,
-        formData
-      );
+      const response = await api.post("/signup", formData);
       const token = response.data.token;
       localStorage.setItem("token", token);
       getUserInfos();

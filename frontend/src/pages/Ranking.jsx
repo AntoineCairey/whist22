@@ -10,16 +10,6 @@ export default function Ranking() {
         ⬅️ Retour
       </button>
       <h2>Classement général</h2>
-      {/* <ul>
-        {users &&
-          users.map((user) => (
-            <li key={user._id}>
-              {user.username} / {user.points} points / {user.numberOfGames}{" "}
-              parties
-            </li>
-          ))}
-      </ul> */}
-
       <table>
         <thead>
           <tr>

@@ -2,7 +2,7 @@ version: '3'
 
 services:
   express:
-    image: antoinecairey/whist22-backend-linux:1.0
+    image: antoinecairey/whist22-backend-linux:latest
     container_name: whist22-backend
     restart: unless-stopped
     tty: true
@@ -11,6 +11,7 @@ services:
     environment:
       APP_PORT: ${APP_PORT}
       APP_SECRET: ${APP_SECRET}
+      MONGO_DATABASE: ${MONGO_DATABASE}
       MONGO_URI: ${MONGO_URI}
     depends_on:
       - mongo
@@ -27,6 +28,9 @@ services:
       - db_data:/data/db
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       
 networks:
   caddy_proxy:
