@@ -2,10 +2,21 @@ import Card from "./Card";
 
 export default function Player({ id, gameData, handleCardClick }) {
   //console.log(gameData);
-  const { names, dealer, player, life, bids, tricks, cards, elimTurn, cardsNb } =
-    gameData;
+  const {
+    names,
+    dealer,
+    player,
+    life,
+    bids,
+    tricks,
+    cards,
+    elimTurn,
+    cardsNb,
+    step,
+  } = gameData;
 
   const position = ["bottom", "left", "top", "right"];
+  const playSteps = ["playerPlay", "finishTrick", "finishRound"];
 
   return (
     <div className={`player ${position[id]}`}>
@@ -17,7 +28,8 @@ export default function Player({ id, gameData, handleCardClick }) {
             </strong>
             <div>{life && life[id]} ❤️</div>
             <div>
-              {tricks && tricks[id]} / {bids[id] ?? "?"} 🃏
+              {playSteps.includes(step) && `${tricks[id]} 🃏 / `}
+              {bids[id] ?? "?"} 📣
             </div>
           </div>
           <div className={`hand ${position[id]}`}>

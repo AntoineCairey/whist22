@@ -20,11 +20,18 @@ body {
   text-align: center;
   background: seagreen;
   color: white;
+  font-size: 16px;
 
   &:not(:has(.game)) {
-    padding: 20px;
+    padding: 30px 50px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: start;
+  }
+
+  &:has(.menu) {
+    /* padding-top: 0px; */
     align-items: center;
     justify-content: center;
   }
@@ -34,6 +41,14 @@ img {
   max-height: 100%;
   max-width: 100%;
   aspect-ratio: initial;
+}
+
+a {
+  color: white;
+
+  &:hover {
+    color: lightgray;
+  }
 }
 
 button {
@@ -46,10 +61,7 @@ button {
   border: none;
   /* border: 2px solid white; */
   border-radius: 5px;
-}
-
-h3 {
-  margin: 0;
+  width: fit-content;
 }
 
 .active-player {
@@ -75,7 +87,7 @@ h3 {
   width: 100%;
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  /* font-size: 16px; */
 
   &.top {
     flex-direction: column-reverse;
@@ -177,14 +189,33 @@ h3 {
   .modal {
     background: white;
     color: black;
-    border-radius: 5px;
+    border-radius: 10px;
     padding: 20px;
+    max-width: 160px;
+
+    h3 {
+      margin: 0;
+      margin-bottom: 15px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
 
     button {
       background: seagreen;
       color: white;
-      margin: 10px 5px;
-      /* border-radius: 50%; */
+      border-radius: 10px;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
 
       &:disabled {
         background: lightgrey;
@@ -195,17 +226,10 @@ h3 {
 }
 
 .rules {
-  text-align: justify;
-  /* z-index: 2;
-  width: 70%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border: 1px solid black;
-  border-radius: 15px;
-  padding: 20px; */
+  text-align: left;
+  p {
+    line-height: 150%;
+  }
 }
 
 .fool-value {
@@ -258,4 +282,68 @@ h3 {
     width: fit-content;
     white-space: pre-line;
   }
+}
+
+.menu-button {
+  padding: 15px 30px;
+  width: 250px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  input {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 250px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+  }
+
+  button {
+    align-self: center;
+    margin-top: 20px;
+  }
+}
+
+.back-button {
+  margin-bottom: 30px;
+  align-self: flex-start;
+}
+
+/* .user-infos {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+} */
+
+table {
+  margin-bottom: 15px;
+  border-collapse: collapse;
+
+  td,
+  th {
+    padding: 5px 10px;
+  }
+
+  thead tr {
+    border-bottom: 1px solid white;
+  }
+
+  tbody tr:not(:first-child) {
+    border-top: 1px solid white;
+  }
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

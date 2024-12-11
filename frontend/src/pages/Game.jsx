@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Player from "../components/Player";
 import Card from "../components/Card";
+import api from "../services/ApiService";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Game() {
+  const { user, getUserInfos } = useContext(AuthContext);
+
   // parametres modifiables :
   const startCardsNb = 5; // nb de cartes en main au 1er tour (5 par défaut)
   const startLife = [3, 3, 3, 3]; // points de vie en début de partie (3 chacun par défaut)
@@ -48,10 +52,12 @@ export default function Game() {
     cards,
     elimTurn,
     cardsNb,
+    step,
   };
 
   useEffect(() => {
     switch (step) {
+      // Début de la partie
       case "startGame":
         setLife(startLife);
         setDealer(Math.floor(Math.random() * startPlayersNb));
@@ -61,6 +67,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Distribution des cartes
       case "distributeCards":
         const newDealer = nextAlivePlayer(dealer);
         setDealer(newDealer);
@@ -96,6 +103,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Un joueur choisit son annonce
       case "playerBid":
         // si fin des annonces -> début 1er pli
         if (player === firstPlayer && bids[player] != null) {
@@ -145,6 +153,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Un joueur choisit la carte à jouer
       case "playerPlay":
         // si fin du pli -> déterminer le gagnant
         if (player === firstPlayer && cardsPlayed[player] != null) {
@@ -239,6 +248,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Fin du pli
       case "finishTrick":
         let winner = cardsPlayed.indexOf(Math.max(...cardsPlayed));
         let theTricks = [...tricks];
@@ -259,6 +269,7 @@ export default function Game() {
 
       // =============================================================================================
 
+      // Fin de la manche
       case "finishRound":
         const theLife = [...life];
         const theElimTurn = [...elimTurn];
@@ -280,12 +291,25 @@ export default function Game() {
         }
         setHistory(infoText);
         setLife(theLife);
-        const finishRoundTimeout = setTimeout(() => {
-          if (theLife[0] === 0) {
-            setScore({ names, life: theLife, elimTurn: theElimTurn });
-            navigate("/score");
-          } else if (theLife.filter((item) => item > 0).length === 1) {
-            setScore({ names, life: theLife, elimTurn: theElimTurn });
+        const finishRoundTimeout = setTimeout(async () => {
+          if (
+            theLife[0] === 0 ||
+            theLife.filter((item) => item > 0).length === 1
+          ) {
+            const isVictory = theLife[0] !== 0;
+            const basePoints = isVictory ? 50 : -20;
+            const bonusPoints = theLife[0] * 50;
+            const malusPoints = (theLife[1] + theLife[2] + theLife[3]) * -10;
+            const points = basePoints + bonusPoints + malusPoints;
+            const score = { names, life: theLife, elimTurn: theElimTurn };
+            setScore(score);
+            await api.post("/games", {
+              userId: user?._id,
+              isVictory,
+              points,
+              score,
+            });
+            getUserInfos();
             navigate("/score");
           } else {
             setRound(round + 1);
@@ -366,7 +390,7 @@ export default function Game() {
   return (
     <>
       <div className="info">
-        <button onClick={() => navigate("/")}>🏠 Menu</button>
+        <button onClick={() => navigate("/")}>⬅️ Quitter</button>
         <div>
           Manche {round} ({cardsNb}🃏)
         </div>
@@ -404,32 +428,36 @@ export default function Game() {
               <div className="modal-back">
                 <div className="modal">
                   <h3>Votre mise</h3>
-                  {Array.from({ length: cardsNb + 1 }, (_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleBidClick(index)}
-                      disabled={
-                        dealer === 0 &&
-                        sumArray(bids) + index === cardsNb &&
-                        cardsNb !== 1
-                      }
-                    >
-                      {index}
-                    </button>
-                  ))}
+                  <div className="buttons">
+                    {Array.from({ length: cardsNb + 1 }, (_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleBidClick(index)}
+                        disabled={
+                          dealer === 0 &&
+                          sumArray(bids) + index === cardsNb &&
+                          cardsNb !== 1
+                        }
+                      >
+                        <div>{index}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
             {askFool && (
-              <div className="modal-back">
-                <div className="modal">
+              <div className="modal-back" onClick={() => setAskFool(false)}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Valeur de l'excuse</h3>
-                  {[0, 22].map((val) => (
-                    <button key={val} onClick={() => handleFoolClick(val)}>
-                      {val}
-                    </button>
-                  ))}
+                  <div className="buttons">
+                    {[0, 22].map((val) => (
+                      <button key={val} onClick={() => handleFoolClick(val)}>
+                        <div>{val}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
