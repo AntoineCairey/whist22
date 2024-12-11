@@ -191,19 +191,31 @@ button {
     color: black;
     border-radius: 10px;
     padding: 20px;
-    max-width: 280px;
+    max-width: 160px;
 
     h3 {
       margin: 0;
       margin-bottom: 15px;
     }
 
+    .buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
     button {
       background: seagreen;
       color: white;
-      padding: 15px 20px;
       border-radius: 10px;
-      margin: 10px;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
 
       &:disabled {
         background: lightgrey;
@@ -320,7 +332,11 @@ table {
     padding: 5px 10px;
   }
 
-  tbody tr {
+  thead tr {
+    border-bottom: 1px solid white;
+  }
+
+  tbody tr:not(:first-child) {
     border-top: 1px solid white;
   }
 }

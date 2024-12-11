@@ -428,32 +428,36 @@ export default function Game() {
               <div className="modal-back">
                 <div className="modal">
                   <h3>Votre mise</h3>
-                  {Array.from({ length: cardsNb + 1 }, (_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleBidClick(index)}
-                      disabled={
-                        dealer === 0 &&
-                        sumArray(bids) + index === cardsNb &&
-                        cardsNb !== 1
-                      }
-                    >
-                      {index}
-                    </button>
-                  ))}
+                  <div className="buttons">
+                    {Array.from({ length: cardsNb + 1 }, (_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleBidClick(index)}
+                        disabled={
+                          dealer === 0 &&
+                          sumArray(bids) + index === cardsNb &&
+                          cardsNb !== 1
+                        }
+                      >
+                        <div>{index}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
             {askFool && (
-              <div className="modal-back">
-                <div className="modal">
+              <div className="modal-back" onClick={() => setAskFool(false)}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Valeur de l'excuse</h3>
-                  {[0, 22].map((val) => (
-                    <button key={val} onClick={() => handleFoolClick(val)}>
-                      {val}
-                    </button>
-                  ))}
+                  <div className="buttons">
+                    {[0, 22].map((val) => (
+                      <button key={val} onClick={() => handleFoolClick(val)}>
+                        <div>{val}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
