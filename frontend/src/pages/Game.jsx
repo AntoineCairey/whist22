@@ -2,23 +2,27 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Player from "../components/Player";
 import Card from "../components/Card";
-import api from "../services/ApiService";
+import api from "../services/apiService";
 import { AuthContext } from "../context/AuthContext";
+import namesList from "../data/names.json";
+import computePoints from "../services/scoreService";
 
 export default function Game() {
   const { user, getUserInfos } = useContext(AuthContext);
 
   // parametres modifiables :
-  const startCardsNb = 5; // nb de cartes en main au 1er tour (5 par défaut)
-  const startLife = [3, 3, 3, 3]; // points de vie en début de partie (3 chacun par défaut)
+  //const startCardsNb = 5; // nb de cartes en main au 1er tour (5 par défaut)
+  //const startLife = [3, 3, 3, 3]; // points de vie en début de partie (3 chacun par défaut)
+
+  const startCardsNb = 2;
+  const startLife = [1, 1, 0, 0];
 
   const navigate = useNavigate();
-  const startPlayersNb = 4;
-  const startPlayers = [0, 1, 2, 3];
-  const names = ["Vous", "Bot 1", "Bot 2", "Bot 3"];
-  const position = ["bottom", "left", "top", "right"];
   const { setScore } = useOutletContext();
+  const startPlayersNb = 4;
+  const position = ["bottom", "left", "top", "right"];
 
+  const [names, setNames] = useState(Array(startPlayersNb).fill(null)); // noms des joueurs
   const [round, setRound] = useState(1); // numero de la manche
   const [dealer, setDealer] = useState(
     Math.floor(Math.random() * startPlayersNb)
@@ -59,6 +63,12 @@ export default function Game() {
     switch (step) {
       // Début de la partie
       case "startGame":
+        // sélection des noms de joueurs
+        const playerName = user ? user.username : "Vous";
+        const shuffled = namesList.sort(() => 0.5 - Math.random());
+        const botNames = shuffled.slice(0, 3);
+        setNames([playerName, ...botNames]);
+
         setLife(startLife);
         setDealer(Math.floor(Math.random() * startPlayersNb));
         setRound(1);
@@ -72,7 +82,7 @@ export default function Game() {
         const newDealer = nextAlivePlayer(dealer);
         setDealer(newDealer);
         setHistory(
-          `${names[newDealer]} distribue${z(newDealer)} ${cardsNb} cartes par personne`
+          `${newDealer === 0 ? "Vous distribuez" : `${names[newDealer]} distribue`} ${cardsNb} cartes par personne`
         );
         setCardsPlayed(Array(startPlayersNb).fill(null));
         setTricks(Array(startPlayersNb).fill(0));
@@ -113,10 +123,8 @@ export default function Game() {
           // si PJ doit parler -> on ne fait rien
         } else if (player === 0) {
           setAskBid(true);
-          const myPlayTimeout = setTimeout(() => {
-            setHistory("A vous de parler");
-          }, 2000);
-          return () => clearTimeout(myPlayTimeout);
+          setHistory(history + "\nA vous de parler");
+          return;
 
           // si joueur est mort -> on passe au suivant
         } else if (life[player] <= 0) {
@@ -130,8 +138,8 @@ export default function Game() {
             // si tour à 1 carte -> annonce basée sur les cartes des autres
             if (cardsNb === 1) {
               const opponentCards = cards
-                .map((hand, i) => (i !== player ? hand[0] : null))
-                .filter((card) => card !== null);
+                .map((hand, i) => (i !== player && hand ? hand[0] : null))
+                .filter((card) => card != null);
               const maxOpponentCard = Math.max(...opponentCards);
               bid = maxOpponentCard < 12 ? 1 : 0;
               // si tour à plus d'une carte
@@ -140,18 +148,21 @@ export default function Game() {
               // on calcule une valeur seuil
               // toute carte supérieure à cette valeur est considérée comme gagnante
               const threshold = 10.5 + totalCards * 0.35;
-              let bid = cards[player].filter((c) => c >= threshold).length;
+              bid = cards[player].filter((c) => c >= threshold).length;
 
               // si dernier à parler -> on modifie la valeur de son annonce pour respecter la contrainte
               // le total des annonces ne doit pas etre égal au nombre de cartes en main
               if (player === dealer && sumArray(bids) + bid === cardsNb) {
                 bid === 0 ? bid++ : bid--;
               }
+              console.log(bid);
             }
+            console.log(bid);
 
             const theBids = [...bids];
             theBids[player] = bid;
             setBids(theBids);
+            console.log(bid);
             setHistory(`${names[player]} annonce ${bid} pli${s(bid)}`);
             setPlayer((p) => nextAlivePlayer(p));
           }, 2000);
@@ -170,10 +181,8 @@ export default function Game() {
 
           // si PJ doit jouer -> on ne fait rien
         } else if (player === 0) {
-          setTimeout(() => {
-            setHistory("A vous de jouer");
-            return;
-          }, 2000);
+          setHistory(history + "\nA vous de jouer");
+          return;
 
           // si joueur est mort -> on passe au suivant
         } else if (life[player] <= 0) {
@@ -273,7 +282,9 @@ export default function Game() {
         theTricks[winner]++;
         setTricks(theTricks);
         setTimeout(() => {
-          setHistory(`${names[winner]} gagne${z(winner)} le pli`);
+          setHistory(
+            `${winner === 0 ? "Vous gagnez" : `${names[winner]} gagne`} le pli`
+          );
           if (cards[0].length === 0) {
             setStep("finishRound");
           } else {
@@ -296,13 +307,13 @@ export default function Game() {
           if (life[i] > 0) {
             let damage = Math.abs(bids[i] - tricks[i]);
             if (damage > 0) {
-              infoText += `\n${names[i]} perd${ez(i)} ${damage} vie${s(damage)}`;
+              infoText += `\n${i === 0 ? "Vous perdez" : `${names[i]} perd`} ${damage} vie${s(damage)}`;
               theLife[i] = Math.max(theLife[i] - damage, 0);
               if (theLife[i] === 0) {
                 theElimTurn[i] = round;
                 setElimTurn(theElimTurn);
-                infoText +=
-                  i === 0 ? ", vous êtes éliminé" : ", il est éliminé";
+                infoText += " → éliminé 💀";
+                // i === 0 ? ", vous êtes éliminé" : ", iel est éliminé";
               }
             }
           }
@@ -314,17 +325,14 @@ export default function Game() {
             theLife[0] === 0 ||
             theLife.filter((item) => item > 0).length === 1
           ) {
-            const isVictory = theLife[0] !== 0;
-            const basePoints = isVictory ? 50 : -20;
-            const bonusPoints = theLife[0] * 50;
-            const malusPoints = (theLife[1] + theLife[2] + theLife[3]) * -10;
-            const points = basePoints + bonusPoints + malusPoints;
+            const { isVictory, totalPoints } = computePoints(theLife);
+            console.log(totalPoints);
             const score = { names, life: theLife, elimTurn: theElimTurn };
             setScore(score);
             await api.post("/games", {
               userId: user?._id,
               isVictory,
-              points,
+              points: totalPoints,
               score,
             });
             getUserInfos();
@@ -402,8 +410,8 @@ export default function Game() {
 
   // terminaison des mots
   const s = (value) => (value > 1 ? "s" : "");
-  const z = (playerId) => (playerId === 0 ? "z" : "");
-  const ez = (playerId) => (playerId === 0 ? "ez" : "");
+  /* const z = (playerId) => (playerId === 0 ? "z" : "");
+  const ez = (playerId) => (playerId === 0 ? "ez" : ""); */
 
   return (
     <>
@@ -416,10 +424,10 @@ export default function Game() {
       <div className="game">
         {cards && (
           <>
-            {startPlayers.map((player) => (
+            {Array.from({ length: startPlayersNb }, (_, index) => (
               <Player
-                key={player}
-                id={player}
+                key={index}
+                id={index}
                 gameData={gameData}
                 handleCardClick={handleCardClick}
               />

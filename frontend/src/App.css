@@ -144,6 +144,10 @@ button {
       max-height: none;
     }
   }
+
+  &.clickable {
+    cursor: pointer;
+  }
 }
 
 .board {
@@ -184,7 +188,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: transparent; /* rgba(0, 0, 0, 0.2) */
 
   .modal {
     background: white;

@@ -12,7 +12,7 @@ import Rules from "./pages/Rules.jsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
-import api from "./services/ApiService.jsx";
+import api from "./services/apiService.js";
 import Ranking from "./pages/Ranking.jsx";
 
 const router = createBrowserRouter([
