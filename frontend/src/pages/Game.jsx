@@ -126,21 +126,29 @@ export default function Game() {
           // cas classique : le bot choisit son annonce
         } else {
           const bidTimeout = setTimeout(() => {
-            const totalCards = cardsNb * life.filter((l) => l > 0).length;
-            // on calcule une valeur seuil
-            // toute carte supérieure à cette valeur est considérée comme gagnante
-            const threshold = 10.5 + totalCards * 0.35;
+            let bid;
+            // si tour à 1 carte -> annonce basée sur les cartes des autres
+            if (cardsNb === 1) {
+              const opponentCards = cards
+                .map((hand, i) => (i !== player ? hand[0] : null))
+                .filter((card) => card !== null);
+              const maxOpponentCard = Math.max(...opponentCards);
+              bid = maxOpponentCard < 12 ? 1 : 0;
+              // si tour à plus d'une carte
+            } else {
+              const totalCards = cardsNb * life.filter((l) => l > 0).length;
+              // on calcule une valeur seuil
+              // toute carte supérieure à cette valeur est considérée comme gagnante
+              const threshold = 10.5 + totalCards * 0.35;
+              let bid = cards[player].filter((c) => c >= threshold).length;
 
-            let bid = cards[player].filter((c) => c >= threshold).length;
-            // si dernier à parler -> on modifie la valeur de son annonce pour respecter la contrainte
-            // le total des annonces ne doit pas etre egal au nombre de cartes en main
-            if (
-              player === dealer &&
-              sumArray(bids) + bid === cardsNb &&
-              cardsNb !== 1
-            ) {
-              bid === 0 ? bid++ : bid--;
+              // si dernier à parler -> on modifie la valeur de son annonce pour respecter la contrainte
+              // le total des annonces ne doit pas etre égal au nombre de cartes en main
+              if (player === dealer && sumArray(bids) + bid === cardsNb) {
+                bid === 0 ? bid++ : bid--;
+              }
             }
+
             const theBids = [...bids];
             theBids[player] = bid;
             setBids(theBids);
@@ -181,6 +189,16 @@ export default function Game() {
             let needsToScore = tricks[player] < bids[player];
             let isLastPlayer = nextAlivePlayer(player) === firstPlayer;
             let canWinTrick = cards[player].at(-1) > biggestCardOnBoard;
+            let nextPlayersDontNeedToScore = !life
+              .map(
+                (l, i) =>
+                  i !== player &&
+                  l > 0 &&
+                  cardsPlayed[i] === null &&
+                  tricks[i] < bids[i]
+              )
+              .includes(true);
+            console.log(nextPlayersDontNeedToScore);
 
             if (!needsToScore) {
               // pas de pli à faire -> joue sa plus grande carte perdante
@@ -195,7 +213,7 @@ export default function Game() {
               }
             } else {
               // encore au moins un pli à faire
-              if (isLastPlayer && canWinTrick) {
+              if (nextPlayersDontNeedToScore && canWinTrick) {
                 // dernier joueur et peut gagner
                 if (bids[player] - tricks[player] >= 2) {
                   // doit faire plus d'un pli -> plus petite carte gagnante

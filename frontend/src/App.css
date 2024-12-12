@@ -294,7 +294,13 @@ button {
 form {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+
+  .form-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   input {
     margin-top: 5px;
@@ -307,8 +313,7 @@ form {
   }
 
   button {
-    align-self: center;
-    margin-top: 20px;
+    margin: 20px;
   }
 }
 
