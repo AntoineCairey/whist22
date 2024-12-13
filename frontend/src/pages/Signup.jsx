@@ -20,7 +20,7 @@ export default function Signup() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (password !== password2) {
+    if (formData.password !== formData.password2) {
       setError("Les mots de passe doivent être identiques");
     } else {
       try {
