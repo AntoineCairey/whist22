@@ -1,7 +1,12 @@
 import { useLoaderData, useNavigate } from "react-router-dom";
 
 export default function Ranking() {
-  const users = useLoaderData();
+  let users;
+  try {
+    users = useLoaderData();
+  } catch (err) {
+    console.error(err);
+  }
   const navigate = useNavigate();
 
   return (

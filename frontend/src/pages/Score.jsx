@@ -22,21 +22,6 @@ export default function Score() {
   combined.sort((a, b) => b.elimTurn - a.elimTurn);
   combined.sort((a, b) => b.life - a.life);
 
-  /* const isVictory = life[0] > 0;
-  let basePoints, lifeLeft, bonusPoints;
-  if (isVictory) {
-    basePoints = 50;
-    lifeLeft = life[0];
-    bonusPoints = lifeLeft * 50;
-  } else {
-    basePoints = -20;
-    lifeLeft = life[1] + life[2] + life[3];
-    bonusPoints = lifeLeft * -10;
-  }
-  const totalPoints = basePoints + bonusPoints; */
-
-  // const s = (value) => (value > 1 ? "s" : "");
-
   const { isVictory, basePoints, bonusPoints, totalPoints, lifeLeft } =
     computePoints(life);
 

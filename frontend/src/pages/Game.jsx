@@ -330,13 +330,15 @@ export default function Game() {
             console.log(totalPoints);
             const score = { names, life: theLife, elimTurn: theElimTurn };
             setScore(score);
-            await api.post("/games", {
-              userId: user?._id,
-              isVictory,
-              points: totalPoints,
-              score,
-            });
-            getUserInfos();
+            if (navigator.onLine) {
+              await api.post("/games", {
+                userId: user?._id,
+                isVictory,
+                points: totalPoints,
+                score,
+              });
+              getUserInfos();
+            }
             navigate("/score");
           } else {
             setRound(round + 1);
