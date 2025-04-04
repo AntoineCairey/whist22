@@ -12,7 +12,7 @@ app.use("/", router);
 
 app
   .listen(port, () => {
-    console.info(`Server is listening on port ${port}`);
+    console.info(`Server is listening on port ${port} 🔥`);
   })
   .on("error", (err) => {
     console.error("Error:", err.message);
