@@ -21,20 +21,15 @@ jobs:
         with:
           node-version: 22
 
+      - name: Ajouter le fichier .env
+        run: |
+          echo "${{ secrets.FRONTEND_ENV }}" > frontend/.env
+
       - name: Installer et builder le frontend
         run: |
           cd frontend
           npm install
           npm run build
-
-      - name: Test SSH Connection
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Connexion SSH réussie !"
 
       - name: Déployer le frontend avec rsync
         uses: burnett01/rsync-deployments@7.0.2
