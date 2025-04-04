@@ -40,5 +40,3 @@ jobs:
           remote_host: ${{ secrets.VPS_HOST }}
           remote_user: ${{ secrets.VPS_USER }}
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      
