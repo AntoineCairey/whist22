@@ -12,7 +12,7 @@ export default function Menu() {
       <h1>Tarot africain</h1>
       <div>Un jeu de cartes simple et passionnant.</div>
       <br />
-      <div>Jouez contre 3 bots et tentez d'être le dernier en jeu.</div>
+      <div>Jouez contre 3 bots et tentez d'être le dernier en jeu. 🙃</div>
       <br />
 
       {navigator.onLine &&
