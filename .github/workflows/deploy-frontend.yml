@@ -27,11 +27,6 @@ jobs:
           npm install
           npm run build
 
-      - name: Ajouter la clé du VPS à known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
       - name: Test SSH Connection
         uses: appleboy/ssh-action@v1
         with:
@@ -40,5 +35,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Connexion SSH réussie !"
+
+      - name: Déployer le frontend avec rsync
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -av --delete
+          path: frontend/dist/
+          remote_path: ~/sites/whist22/
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       
