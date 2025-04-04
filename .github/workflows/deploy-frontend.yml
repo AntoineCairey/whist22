@@ -32,11 +32,13 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Déployer avec rsync
+      - name: Test SSH Connection
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            rsync -av --delete frontend/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:~/sites/whist22/
+            echo "Connexion SSH réussie !"
+
+      
