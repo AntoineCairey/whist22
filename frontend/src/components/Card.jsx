@@ -7,7 +7,7 @@ export default function Card({
 }) {
   return (
     <div
-      className={`card ${isHorizontal ? "horizontal" : ""}`}
+      className={`card${isHorizontal ? " horizontal" : ""}${isClickable ? " clickable" : ""}`}
       onClick={() => (isClickable ? handleCardClick(value) : null)}
     >
       {/* <div>{isVisible ? value : "?"}</div> */}

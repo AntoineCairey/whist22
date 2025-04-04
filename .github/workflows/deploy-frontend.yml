@@ -1,0 +1,36 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cloner le repo
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer et builder le frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Déployer avec rsync
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rsync -av --delete frontend/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:~/sites/whist22/

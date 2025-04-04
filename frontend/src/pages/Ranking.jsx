@@ -1,7 +1,12 @@
 import { useLoaderData, useNavigate } from "react-router-dom";
 
 export default function Ranking() {
-  const users = useLoaderData();
+  let users;
+  try {
+    users = useLoaderData();
+  } catch (err) {
+    console.error(err);
+  }
   const navigate = useNavigate();
 
   return (
@@ -10,6 +15,7 @@ export default function Ranking() {
         ⬅️ Retour
       </button>
       <h2>Classement général</h2>
+
       <table>
         <thead>
           <tr>
@@ -31,6 +37,21 @@ export default function Ranking() {
             ))}
         </tbody>
       </table>
+      <br />
+      <br />
+      <div>
+        <b>
+          <i>
+            Atteignez le sommet du classement et devenez le maître du tarot
+            africain !
+          </i>
+        </b>
+      </div>
+      <br />
+      <div>
+        Chaque nouveau joueur commence avec 1000 points. Vous gagnez ou perdez
+        des points en fonction des résultats de vos parties.
+      </div>
     </>
   );
 }

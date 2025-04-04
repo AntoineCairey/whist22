@@ -15,24 +15,39 @@ export default function Menu() {
       <div>Jouez contre 3 bots et tentez d'être le dernier en jeu.</div>
       <br />
 
-      {user ? (
-        <button className="menu-button" onClick={() => navigate("/profile")}>
-          🪪 Mon profil
-        </button>
-      ) : (
-        <button className="menu-button" onClick={() => navigate("/login")}>
-          🔑 Me connecter
-        </button>
-      )}
+      {navigator.onLine &&
+        (user ? (
+          <button className="menu-button" onClick={() => navigate("/profile")}>
+            🪪 Mon profil
+          </button>
+        ) : (
+          <button className="menu-button" onClick={() => navigate("/login")}>
+            🔑 Me connecter
+          </button>
+        ))}
+
       <button className="menu-button" onClick={() => navigate("/game")}>
         🃏 Jouer
       </button>
-      <button className="menu-button" onClick={() => navigate("/ranking")}>
-        🏆 Classement général
-      </button>
+
+      {navigator.onLine && (
+        <button className="menu-button" onClick={() => navigate("/ranking")}>
+          🏆 Classement général
+        </button>
+      )}
+
       <button className="menu-button" onClick={() => navigate("/rules")}>
         📖 Règles du jeu
       </button>
+
+      {!navigator.onLine && (
+        <>
+          <br />
+          <div>
+            <i>Mode hors ligne</i>
+          </div>
+        </>
+      )}
     </div>
   );
 }

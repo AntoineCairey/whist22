@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "./App.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import "./App.css";
 
 import App from "./App.jsx";
 import Game from "./pages/Game.jsx";
@@ -12,7 +12,7 @@ import Rules from "./pages/Rules.jsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
-import api from "./services/ApiService.jsx";
+import api from "./services/apiService.js";
 import Ranking from "./pages/Ranking.jsx";
 
 const router = createBrowserRouter([
@@ -51,12 +51,14 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile />,
-        loader: async () => (await api.get("/users/me/games")).data,
+        loader: async () =>
+          navigator.onLine ? (await api.get("/users/me/games")).data : [],
       },
       {
         path: "/ranking",
         element: <Ranking />,
-        loader: async () => (await api.get("/bestusers")).data,
+        loader: async () =>
+          navigator.onLine ? (await api.get("/bestusers")).data : [],
       },
     ],
   },

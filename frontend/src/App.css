@@ -144,6 +144,10 @@ button {
       max-height: none;
     }
   }
+
+  &.clickable {
+    cursor: pointer;
+  }
 }
 
 .board {
@@ -184,7 +188,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: transparent; /* rgba(0, 0, 0, 0.2) */
 
   .modal {
     background: white;
@@ -294,7 +298,13 @@ button {
 form {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+
+  .form-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   input {
     margin-top: 5px;
@@ -307,8 +317,7 @@ form {
   }
 
   button {
-    align-self: center;
-    margin-top: 20px;
+    margin: 20px;
   }
 }
 

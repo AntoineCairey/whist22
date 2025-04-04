@@ -1,6 +1,6 @@
 const { MongoClient } = require("mongodb");
 
-const userStart = 500;
+const userStart = 1000;
 const victoryBase = 50;
 const victoryLifeBonus = 50;
 const defeatBase = -20;
