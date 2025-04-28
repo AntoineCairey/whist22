@@ -15,6 +15,7 @@ import Profile from "./pages/Profile.jsx";
 import api from "./services/apiService.js";
 import Ranking from "./pages/Ranking.jsx";
 import Lobby from "./pages/Lobby.jsx";
+import Multi from "./pages/Multi.jsx";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
       {
         path: "/lobby",
         element: <Lobby />,
+      },
+      {
+        path: "/multi",
+        element: <Multi />,
       },
     ],
   },
