@@ -1,33 +1,62 @@
 const games = {};
 
-/* let gameData = {
-  roomId: "abc123",
-  round: 7,
-  startCardsNb : 3, 
+let gameData = {
+  round: 1,
+  cardsNb: 5,
   step: "startGame",
-  activePlayer : 2, // id du joueur actif
+  activePlayer: 1, // index du joueur actif
   dealer: 0, // id du donneur
-  board: [null, null, 5, 14], // null si pas encore joué ou éliminé
-  previousTrick: [2, 4, 10, 6],
+  board: [null, null, null, null], // null si pas encore joué ou éliminé
+  previousTrick: [],
   players: [
     {
       index: 0, // nécessaire ?
       id: 1234, // null si bot ?
-      name: "Bob",
+      name: "J1",
       health: 3,
-      bid: 1,
-      tricks: 0,
-      hand: [3, 7, 12],
+      bid: null,
+      tricks: null,
+      hand: [3, 7, 12, 15, 19],
       elimTurn: null, // null si joueur en vie
     },
+    {
+      index: 1,
+      id: 5678,
+      name: "J2",
+      health: 3,
+      bid: null,
+      tricks: null,
+      hand: [3, 7, 12, 15, 19],
+      elimTurn: null,
+    },
+    {
+      index: 2,
+      id: null,
+      name: "B1",
+      health: 3,
+      bid: null,
+      tricks: null,
+      hand: [3, 7, 12, 15, 19],
+      elimTurn: null,
+    },
+    {
+      index: 3,
+      id: null,
+      name: "B2",
+      health: 3,
+      bid: null,
+      tricks: null,
+      hand: [3, 7, 12, 15, 19],
+      elimTurn: null,
+    },
   ],
-}; */
+};
 
 function delay(seconds) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-async function startGame() {
+async function startGame(io, roomName) {
   /* 
   setup état initial
   définir un ordre aléatoire
@@ -35,6 +64,10 @@ async function startGame() {
   emit ?
   lancer distribution
    */
+  console.log("hi");
+  games[roomName] = gameData;
+  io.to(roomName).emit("gameStarted");
+  io.to(roomName).emit("gameUpdate", games[roomName]);
 }
 
 async function dealCards() {
@@ -48,3 +81,4 @@ async function dealCards() {
   */
 }
 
+module.exports = { startGame };

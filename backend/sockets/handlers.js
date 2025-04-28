@@ -1,9 +1,10 @@
+const { startGame } = require("./gameController");
 const {
   getRooms,
   createRoom,
   joinRoom,
   leaveRoom,
-  startGame,
+  //startGame,
 } = require("./roomController");
 
 function handleSocketConnection(io, socket) {
@@ -16,9 +17,9 @@ function handleSocketConnection(io, socket) {
   socket.on("createRoom", (data) => createRoom(io, socket, data));
   socket.on("joinRoom", (data) => joinRoom(io, socket, data));
   socket.on("leaveRoom", (data) => leaveRoom(io, socket, data));
-  socket.on("startGame", (data) => startGame(io, socket, data));
-
+  
   // game events
+  socket.on("startGame", (data) => startGame(io, data));
 }
 
 module.exports = { handleSocketConnection };

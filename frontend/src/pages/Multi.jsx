@@ -2,9 +2,10 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Card from "../components/Card";
+import { useSocket } from "../context/SocketContext";
 
 export default function Multi() {
-  let gameData = {
+  /*   let gameData = {
     roomId: "abc123",
     round: 1,
     cardsNb: 5,
@@ -55,22 +56,24 @@ export default function Multi() {
         elimTurn: null,
       },
     ],
-  };
+  }; */
 
-  const [game, setGame] = useState(gameData);
+  const [game, setGame] = useState();
   const [askBid, setAskBid] = useState(false);
   const [askFool, setAskFool] = useState(false);
 
+  const socket = useSocket();
   const { user, getUserInfos } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const position = ["bottom", "left", "top", "right"];
   const playSteps = ["playerPlay", "finishTrick", "finishRound"];
 
-  /*   useEffect(() => {
+  useEffect(() => {
+    if (!socket) return;
     socket.on("gameUpdate", (gameData) => setGame(gameData));
-    return () => socket.off("gameUpdate")
-  }, []); */
+    return () => socket.off("gameUpdate");
+  }, [socket]);
 
   const sumArray = (arr) => {
     return arr.reduce((acc, curr) => acc + curr, 0);
@@ -80,7 +83,11 @@ export default function Multi() {
   const handleCardClick = (myCard) => {};
   const handleFoolClick = (myCard) => {};
 
-  return (
+  console.log(game);
+
+  return !game ? (
+    <div>Loading</div>
+  ) : (
     <>
       <div className="info">
         <button onClick={() => navigate("/")}>⬅️ Quitter</button>

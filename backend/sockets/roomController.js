@@ -9,9 +9,7 @@ function createRoom(io, socket, { roomName, player }) {
     socket.emit("error", "Room already exists");
     return;
   }
-
   rooms[roomName] = [player];
-
   socket.join(roomName);
   io.emit("roomsUpdate", rooms);
 }
@@ -22,16 +20,14 @@ function joinRoom(io, socket, { roomName, player }) {
     socket.emit("error", "Room does not exist");
     return;
   }
-
   room.push(player);
   socket.join(roomName);
-  io.emit("roomsUpdate", rooms);
+  io.emit("roomsUpdate", rooms); 
 }
 
 function leaveRoom(io, socket, { roomName, player }) {
   rooms[roomName] = rooms[roomName].filter((p) => p.id !== player.id);
   socket.leave(roomName);
-
   if (rooms[roomName].length === 0) {
     delete rooms[roomName];
   }
@@ -39,7 +35,7 @@ function leaveRoom(io, socket, { roomName, player }) {
 }
 
 function startGame(io, socket, { roomName, player }) {
-  console.log("startGame")
+  console.log("startGame");
   io.to(roomName).emit("gameStarted");
   //delete rooms[roomName];
 }

@@ -1,23 +1,29 @@
 import { useContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-
-const socket = io("http://localhost:3000");
+import { useSocket } from "../context/SocketContext";
 
 export default function Lobby() {
-  const [tables, setTables] = useState({});
+  const [rooms, setRooms] = useState({});
+  const socket = useSocket();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+
   const player = { id: user?._id, name: user?.username };
+  const myRoom = Object.keys(rooms).find((k) =>
+    rooms[k].find((p) => p.id === user?._id)
+  );
+  console.log(myRoom);
 
   useEffect(() => {
+    if (!socket) return;
+
     socket.emit("getRooms");
 
-    socket.on("roomsUpdate", (tables) => {
+    socket.on("roomsUpdate", (rooms) => {
       console.log("Liste des rooms mise à jour");
-      console.log(tables);
-      setTables(tables);
+      console.log(rooms);
+      setRooms(rooms);
     });
 
     socket.on("gameStarted", () => {
@@ -29,34 +35,36 @@ export default function Lobby() {
       socket.off("roomsUpdate");
       socket.off("gameStarted");
     };
-  }, []);
+  }, [socket]);
 
   return (
     <div className="lobby">
-      
       <button onClick={() => navigate("/")}>⬅️ Retour</button>
       <h1>Lobby</h1>
       <h3>Tables disponibles</h3>
-      {Object.keys(tables).length === 0 && (
+      {Object.keys(rooms).length === 0 && (
         <i>Pas de table disponible actuellement, crée-en une</i>
       )}
 
-      {Object.entries(tables).map(([roomName, players]) => (
+      {Object.entries(rooms).map(([roomName, players]) => (
         <div key={roomName} className="table">
           <div>{players.map((p) => p.name).join(", ")}</div>
           <div>{4 - players.length} places disponibles</div>
-          <button onClick={() => socket.emit("joinRoom", { roomName, player })}>
-            Rejoindre
-          </button>
-          <button
-            onClick={() => socket.emit("leaveRoom", { roomName, player })}
-          >
-            Quitter
-          </button>
-          {players.length >= 2 && (
+          {roomName !== myRoom ? (
             <button
-              onClick={() => socket.emit("startGame", { roomName, player })}
+              onClick={() => socket.emit("joinRoom", { roomName, player })}
             >
+              Rejoindre
+            </button>
+          ) : (
+            <button
+              onClick={() => socket.emit("leaveRoom", { roomName, player })}
+            >
+              Quitter
+            </button>
+          )}
+          {roomName === myRoom && players.length >= 2 && (
+            <button onClick={() => socket.emit("startGame", roomName)}>
               Jouer
             </button>
           )}

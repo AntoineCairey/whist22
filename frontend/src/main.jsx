@@ -16,6 +16,7 @@ import api from "./services/apiService.js";
 import Ranking from "./pages/Ranking.jsx";
 import Lobby from "./pages/Lobby.jsx";
 import Multi from "./pages/Multi.jsx";
+import SocketLayout from "./components/SocketLayout.jsx";
 
 const router = createBrowserRouter([
   {
@@ -63,12 +64,17 @@ const router = createBrowserRouter([
           navigator.onLine ? (await api.get("/bestusers")).data : [],
       },
       {
-        path: "/lobby",
-        element: <Lobby />,
-      },
-      {
-        path: "/multi",
-        element: <Multi />,
+        element: <SocketLayout />,
+        children: [
+          {
+            path: "/lobby",
+            element: <Lobby />,
+          },
+          {
+            path: "/multi",
+            element: <Multi />,
+          },
+        ],
       },
     ],
   },
