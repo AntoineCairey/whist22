@@ -14,6 +14,7 @@ import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import api from "./services/apiService.js";
 import Ranking from "./pages/Ranking.jsx";
+import Lobby from "./pages/Lobby.jsx";
 
 const router = createBrowserRouter([
   {
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
         element: <Ranking />,
         loader: async () =>
           navigator.onLine ? (await api.get("/bestusers")).data : [],
+      },
+      {
+        path: "/lobby",
+        element: <Lobby />,
       },
     ],
   },
