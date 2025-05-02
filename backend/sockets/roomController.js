@@ -22,7 +22,7 @@ function joinRoom(io, socket, { roomName, player }) {
   }
   room.push(player);
   socket.join(roomName);
-  io.emit("roomsUpdate", rooms); 
+  io.emit("roomsUpdate", rooms);
 }
 
 function leaveRoom(io, socket, { roomName, player }) {
@@ -34,10 +34,11 @@ function leaveRoom(io, socket, { roomName, player }) {
   io.emit("roomsUpdate", rooms);
 }
 
-function startGame(io, socket, { roomName, player }) {
+/* function startGame(io, socket, { roomName, player }) {
   console.log("startGame");
-  io.to(roomName).emit("gameStarted");
+  console.log(roomName);
+  io.to(roomName).emit("gameStarted", roomName);
   //delete rooms[roomName];
-}
+} */
 
-module.exports = { getRooms, createRoom, joinRoom, leaveRoom, startGame };
+module.exports = { rooms, getRooms, createRoom, joinRoom, leaveRoom };

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { socket } from "./services/socket";
 import "./App.css";
 
 import App from "./App.jsx";
@@ -17,6 +18,15 @@ import Ranking from "./pages/Ranking.jsx";
 import Lobby from "./pages/Lobby.jsx";
 import Multi from "./pages/Multi.jsx";
 import SocketLayout from "./components/SocketLayout.jsx";
+
+// loader.js
+export function gameLoader({ params }) {
+  return new Promise((resolve, reject) => {
+    socket.emit("getGameState", params.roomName);
+    socket.once("gameUpdate", (data) => resolve(data));
+    setTimeout(() => reject(new Error("Pas de réponse du serveur")), 5000);
+  });
+}
 
 const router = createBrowserRouter([
   {
@@ -64,15 +74,16 @@ const router = createBrowserRouter([
           navigator.onLine ? (await api.get("/bestusers")).data : [],
       },
       {
-        element: <SocketLayout />,
+        element: <SocketLayout />, // fournit le socket
         children: [
           {
             path: "/lobby",
             element: <Lobby />,
           },
           {
-            path: "/multi",
+            path: "/multi/:roomName",
             element: <Multi />,
+            loader: gameLoader,
           },
         ],
       },

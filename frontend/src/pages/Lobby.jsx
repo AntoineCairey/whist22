@@ -26,9 +26,10 @@ export default function Lobby() {
       setRooms(rooms);
     });
 
-    socket.on("gameStarted", () => {
+    socket.on("gameStarted", (roomName) => {
       console.log("gameStarted");
-      navigate("/multi");
+      console.log(roomName);
+      navigate("/multi/" + roomName);
     });
 
     return () => {

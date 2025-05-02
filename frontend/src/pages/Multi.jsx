@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Card from "../components/Card";
 import { useSocket } from "../context/SocketContext";
@@ -58,7 +58,8 @@ export default function Multi() {
     ],
   }; */
 
-  const [game, setGame] = useState();
+  const initialGame = useLoaderData();
+  const [game, setGame] = useState(initialGame);
   const [askBid, setAskBid] = useState(false);
   const [askFool, setAskFool] = useState(false);
 
@@ -68,6 +69,9 @@ export default function Multi() {
 
   const position = ["bottom", "left", "top", "right"];
   const playSteps = ["playerPlay", "finishTrick", "finishRound"];
+
+  const myIndex = game?.players.findIndex((p) => p.id === user._id);
+  const offset = (index) => (index - myIndex + 4) % 4;
 
   useEffect(() => {
     if (!socket) return;
@@ -98,30 +102,39 @@ export default function Multi() {
       <div className="game">
         {true && (
           <>
-            {Array.from({ length: 4 }, (_, id) => (
-              <div key={id} className={`player ${position[id]}`}>
-                {game.players[id].health > 0 ? (
+            {game.players.map((player, index) => (
+              <div
+                key={offset(index)}
+                className={`player ${position[offset(index)]}`}
+              >
+                {player.health > 0 ? (
                   <>
                     <div
-                      className={`scores${game.activePlayer === id ? " active-player" : ""}`}
+                      className={`scores${game.activePlayer === index ? " active-player" : ""}`}
                     >
                       <strong>
-                        {game.players[id].name} {game.dealer === id && "♟️"}
+                        {player.name} {game.dealer === index && "♟️"}
                       </strong>
-                      <div>{game.players[id].health} ❤️</div>
+                      <div>{player.health} ❤️</div>
                       <div>
                         {playSteps.includes(game.step) &&
-                          `${game.players[id].tricks} 🃏 / `}
-                        {game.players[id].bid ?? "?"} 📣
+                          `${player.tricks} 🃏 / `}
+                        {player.bid ?? "?"} 📣
                       </div>
                     </div>
-                    <div className={`hand ${position[id]}`}>
-                      {game.players[id].hand.map((card) => (
+                    <div className={`hand ${position[offset(index)]}`}>
+                      {player.hand.map((card) => (
                         <Card
                           key={card}
-                          isHorizontal={id === 1 || id === 3}
-                          isVisible={(id === 0) !== (game.cardsNb === 1)}
-                          isClickable={id === 0 && game.activePlayer === 0}
+                          isHorizontal={
+                            offset(index) === 1 || offset(index) === 3
+                          }
+                          isVisible={
+                            (offset(index) === 0) !== (game.cardsNb === 1)
+                          }
+                          isClickable={
+                            offset(index) === 0 && game.activePlayer === 0
+                          }
                           value={card}
                           handleCardClick={handleCardClick}
                         />
@@ -130,8 +143,8 @@ export default function Multi() {
                   </>
                 ) : (
                   <>
-                    <strong>{game.players[id].name}</strong>
-                    <div>Eliminé tour {game.players[id].elimTurn}</div>
+                    <strong>{player.name}</strong>
+                    <div>Eliminé tour {player.elimTurn}</div>
                   </>
                 )}
               </div>
