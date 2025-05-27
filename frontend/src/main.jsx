@@ -22,7 +22,7 @@ import SocketLayout from "./components/SocketLayout.jsx";
 // loader.js
 export function gameLoader({ params }) {
   return new Promise((resolve, reject) => {
-    socket.emit("getGameState", params.roomName);
+    socket.emit("getGameState", params.roomId);
     socket.once("gameUpdate", (data) => resolve(data));
     setTimeout(() => reject(new Error("Pas de réponse du serveur")), 5000);
   });
@@ -81,7 +81,7 @@ const router = createBrowserRouter([
             element: <Lobby />,
           },
           {
-            path: "/multi/:roomName",
+            path: "/multi/:roomId",
             element: <Multi />,
             loader: gameLoader,
           },

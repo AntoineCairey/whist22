@@ -3,7 +3,7 @@ const { rooms } = require("./roomController");
 const games = {};
 
 const gameInit = {
-  roomName: "",
+  roomId: "",
   round: 1,
   cardsNb: 5,
   step: "startGame",
@@ -30,8 +30,8 @@ function delay(seconds) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-function getGameState(socket, roomName) {
-  socket.emit("gameUpdate", games[roomName]);
+function getGameState(socket, roomId) {
+  socket.emit("gameUpdate", games[roomId]);
 }
 
 function nextAlivePlayer(playerIndex, players) {
@@ -54,16 +54,16 @@ setup état initial
 emit ?
 lancer distribution
  */
-async function startGame(io, roomName) {
+async function startGame(io, roomId) {
   const game = { ...gameInit };
-  game.roomName = roomName;
+  game.roomId = roomId;
   game.players = [];
   game.board = [];
 
-  console.log(rooms[roomName]);
+  console.log(rooms[roomId]);
   for (i = 0; i < 4; i++) {
     const playerData = { ...playerInit };
-    const roomPlayer = rooms[roomName][i];
+    const roomPlayer = rooms[roomId][i];
     playerData.hand = [];
     if (roomPlayer) {
       playerData.id = roomPlayer.id;
@@ -74,15 +74,15 @@ async function startGame(io, roomName) {
     game.players[i] = playerData;
   }
   game.players.sort(() => 0.5 - Math.random());
-  games[roomName] = game;
+  games[roomId] = game;
 
   game.step = "dealCards";
-  io.to(roomName).emit("gameStarted", roomName);
+  io.to(roomId).emit("gameStarted", roomId);
   // delay(1);
-  dealCards(io, roomName);
+  dealCards(io, roomId);
 }
 
-async function dealCards(io, roomName) {
+async function dealCards(io, roomId) {
   /* 
   next dealer
   init board, bids, tricks...
@@ -91,7 +91,7 @@ async function dealCards(io, roomName) {
   await delay(1);
   launch bids
   */
-  const game = games[roomName];
+  const game = games[roomId];
   const players = game.players;
 
   game.dealer = nextAlivePlayer(game.dealer, players);
@@ -124,15 +124,15 @@ async function dealCards(io, roomName) {
   }
 
   game.step = "playerBid";
-  io.to(roomName).emit("gameUpdate", game);
+  io.to(roomId).emit("gameUpdate", game);
   delay(1);
-  // playerBid(io, roomName);
+  // playerBid(io, roomId);
 }
 
 // Choix annonce (humain ou bot)
 // Peut être appelé par serveur ou client
-async function playerBid(io, roomName, { userIndex, bid } = {}) {
-  const game = games[roomName];
+async function playerBid(io, roomId, { userIndex, bid } = {}) {
+  const game = games[roomId];
   const players = game.players;
 
   // si joueur est mort -> on passe au suivant
@@ -160,8 +160,6 @@ async function playerBid(io, roomName, { userIndex, bid } = {}) {
       // si tour à plus d'une carte
     } else {
       ////////// CONTINUER ICI
-
-
     }
   }
 
@@ -171,7 +169,7 @@ async function playerBid(io, roomName, { userIndex, bid } = {}) {
     players[activePlayer].bid !== null
   ) {
     game.step = "playerPlay";
-    playerPlay(io, roomName);
+    playerPlay(io, roomId);
   }
 }
 

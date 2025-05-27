@@ -17,7 +17,7 @@ export default function Lobby() {
 
   function handleBack() {
     if (myRoom !== undefined) {
-      socket.emit("leaveRoom", { roomName: myRoom, player });
+      socket.emit("leaveRoom", { roomId: myRoom, player });
     }
     navigate("/");
   }
@@ -33,10 +33,10 @@ export default function Lobby() {
       setRooms(rooms);
     });
 
-    socket.on("gameStarted", (roomName) => {
+    socket.on("gameStarted", (roomId) => {
       console.log("gameStarted");
-      console.log(roomName);
-      navigate("/multi/" + roomName);
+      console.log(roomId);
+      navigate("/multi/" + roomId);
     });
 
     return () => {
@@ -53,25 +53,23 @@ export default function Lobby() {
       {Object.keys(rooms).length === 0 && (
         <i>Pas de table disponible actuellement, crée-en une</i>
       )}
-      {Object.entries(rooms).map(([roomName, players]) => (
-        <div key={roomName} className="table">
+      {Object.entries(rooms).map(([roomId, players]) => (
+        <div key={roomId} className="table">
           <div>{players.map((p) => p.name).join(", ")}</div>
           <div>{4 - players.length} places disponibles</div>
-          {roomName !== myRoom ? (
-            <button
-              onClick={() => socket.emit("joinRoom", { roomName, player })}
-            >
+          {roomId !== myRoom ? (
+            <button onClick={() => socket.emit("joinRoom", { roomId, player })}>
               Rejoindre
             </button>
           ) : (
             <button
-              onClick={() => socket.emit("leaveRoom", { roomName, player })}
+              onClick={() => socket.emit("leaveRoom", { roomId, player })}
             >
               Quitter
             </button>
           )}
-          {roomName === myRoom && players.length >= 2 && (
-            <button onClick={() => socket.emit("startGame", roomName)}>
+          {roomId === myRoom && players.length >= 2 && (
+            <button onClick={() => socket.emit("startGame", roomId)}>
               Jouer
             </button>
           )}

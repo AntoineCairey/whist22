@@ -8,41 +8,41 @@ function getRooms(io, socket) {
 }
 
 function createRoom(io, socket, player) {
-  /* if (rooms[roomName]) {
+  /* if (rooms[roomId]) {
     socket.emit("error", "Room already exists");
     return;
   } */
-  const roomName = randomId();
-  rooms[roomName] = [player];
-  socket.join(roomName);
+  const roomId = randomId();
+  rooms[roomId] = [player];
+  socket.join(roomId);
   io.emit("roomsUpdate", rooms);
 }
 
-function joinRoom(io, socket, { roomName, player }) {
-  const room = rooms[roomName];
+function joinRoom(io, socket, { roomId, player }) {
+  const room = rooms[roomId];
   if (!room) {
     socket.emit("error", "Room does not exist");
     return;
   }
   room.push(player);
-  socket.join(roomName);
+  socket.join(roomId);
   io.emit("roomsUpdate", rooms);
 }
 
-function leaveRoom(io, socket, { roomName, player }) {
-  rooms[roomName] = rooms[roomName].filter((p) => p.id !== player.id);
-  socket.leave(roomName);
-  if (rooms[roomName].length === 0) {
-    delete rooms[roomName];
+function leaveRoom(io, socket, { roomId, player }) {
+  rooms[roomId] = rooms[roomId].filter((p) => p.id !== player.id);
+  socket.leave(roomId);
+  if (rooms[roomId].length === 0) {
+    delete rooms[roomId];
   }
   io.emit("roomsUpdate", rooms);
 }
 
-/* function startGame(io, socket, { roomName, player }) {
+/* function startGame(io, socket, { roomId, player }) {
   console.log("startGame");
-  console.log(roomName);
-  io.to(roomName).emit("gameStarted", roomName);
-  //delete rooms[roomName];
+  console.log(roomId);
+  io.to(roomId).emit("gameStarted", roomId);
+  //delete rooms[roomId];
 } */
 
 module.exports = { rooms, getRooms, createRoom, joinRoom, leaveRoom };
