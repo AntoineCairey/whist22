@@ -1,4 +1,4 @@
-const { getGameState, startGame } = require("./gameController");
+const { getGameState, startGame, playerBid } = require("./gameController");
 const {
   getRooms,
   createRoom,
@@ -20,6 +20,7 @@ function handleSocketConnection(io, socket) {
   // game events
   socket.on("getGameState", (data) => getGameState(socket, data));
   socket.on("startGame", (data) => startGame(io, data));
+  socket.on("playerBid", (data) => playerBid(io, data));
 }
 
 module.exports = { handleSocketConnection };

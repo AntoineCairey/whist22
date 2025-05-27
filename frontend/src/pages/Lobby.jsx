@@ -15,6 +15,13 @@ export default function Lobby() {
   );
   console.log(myRoom);
 
+  function handleBack() {
+    if (myRoom !== undefined) {
+      socket.emit("leaveRoom", { roomName: myRoom, player });
+    }
+    navigate("/");
+  }
+
   useEffect(() => {
     if (!socket) return;
 
@@ -40,13 +47,12 @@ export default function Lobby() {
 
   return (
     <div className="lobby">
-      <button onClick={() => navigate("/")}>⬅️ Retour</button>
+      <button onClick={handleBack}>⬅️ Retour</button>
       <h1>Lobby</h1>
       <h3>Tables disponibles</h3>
       {Object.keys(rooms).length === 0 && (
         <i>Pas de table disponible actuellement, crée-en une</i>
       )}
-
       {Object.entries(rooms).map(([roomName, players]) => (
         <div key={roomName} className="table">
           <div>{players.map((p) => p.name).join(", ")}</div>
@@ -71,19 +77,20 @@ export default function Lobby() {
           )}
         </div>
       ))}
-
       <br />
       <br />
-      <button
-        onClick={() =>
-          socket.emit("createRoom", {
-            roomName: `room-${Date.now()}`,
-            player,
-          })
-        }
-      >
-        ➕ Créer une nouvelle table
-      </button>
+      {myRoom === undefined && (
+        <button
+          onClick={() =>
+            socket.emit("createRoom", {
+              roomName: `room-${Date.now()}`,
+              player,
+            })
+          }
+        >
+          ➕ Créer une nouvelle table
+        </button>
+      )}
     </div>
   );
 }

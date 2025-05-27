@@ -58,8 +58,8 @@ export default function Multi() {
     ],
   }; */
 
-  const initialGame = useLoaderData();
-  const [game, setGame] = useState(initialGame);
+  let game = useLoaderData();
+  //const [game, setGame] = useState(initialGame);
   const [askBid, setAskBid] = useState(false);
   const [askFool, setAskFool] = useState(false);
 
@@ -75,7 +75,7 @@ export default function Multi() {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("gameUpdate", (gameData) => setGame(gameData));
+    socket.on("gameUpdate", (gameData) => (game = gameData));
     return () => socket.off("gameUpdate");
   }, [socket]);
 
