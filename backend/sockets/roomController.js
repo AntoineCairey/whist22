@@ -1,14 +1,18 @@
+const crypto = require("crypto");
+
 const rooms = {};
+const randomId = () => crypto.randomBytes(4).toString("hex");
 
 function getRooms(io, socket) {
   socket.emit("roomsUpdate", rooms);
 }
 
-function createRoom(io, socket, { roomName, player }) {
-  if (rooms[roomName]) {
+function createRoom(io, socket, player) {
+  /* if (rooms[roomName]) {
     socket.emit("error", "Room already exists");
     return;
-  }
+  } */
+  const roomName = randomId();
   rooms[roomName] = [player];
   socket.join(roomName);
   io.emit("roomsUpdate", rooms);

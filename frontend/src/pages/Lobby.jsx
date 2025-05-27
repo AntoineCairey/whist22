@@ -80,14 +80,7 @@ export default function Lobby() {
       <br />
       <br />
       {myRoom === undefined && (
-        <button
-          onClick={() =>
-            socket.emit("createRoom", {
-              roomName: `room-${Date.now()}`,
-              player,
-            })
-          }
-        >
+        <button onClick={() => socket.emit("createRoom", player)}>
           ➕ Créer une nouvelle table
         </button>
       )}
