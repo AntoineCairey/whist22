@@ -1,6 +1,7 @@
 const { rooms } = require("./roomController");
 
 const games = {};
+const waitingTime = 3;
 
 const gameInit = {
   roomId: "",
@@ -83,7 +84,7 @@ async function startGame(io, roomId) {
 
   game.step = "dealCards";
   io.to(roomId).emit("gameStarted", roomId);
-  // delay(1);
+  // async delay(waitingTime);
   dealCards(io, roomId);
 }
 
@@ -131,7 +132,7 @@ async function dealCards(io, roomId) {
 
   game.step = "playerBid";
   io.to(roomId).emit("gameUpdate", game);
-  await delay(5);
+  //await delay(waitingTime);
   playerBid(io, { roomId });
 }
 
@@ -143,8 +144,8 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
   const activePlayer = players[game.activePlayerIndex];
   let bid;
 
-  console.log("start playerBid" + game.activePlayerIndex);
-  console.log(userIndex != null ? userIndex + " , " + userBid : "rien");
+  console.log("playerBid joueur " + game.activePlayerIndex);
+  console.log(userIndex != null ? "via clic" : "via algo");
 
   // si fin des annonces -> début 1er pli
   if (
@@ -152,8 +153,8 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
     activePlayer.bid !== null
   ) {
     game.step = "playerPlay";
-    //playerPlay(io, { roomId });
-    console.log("START PLAYING")
+    io.to(roomId).emit("gameUpdate", game);
+    playerPlay(io, { roomId });
     return;
   }
 
@@ -161,10 +162,17 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
   if (userIndex != null) {
     // check si c'est son tour (ajouter d'autres vérifs plus tard ?)
     if (userIndex === game.activePlayerIndex) {
+      console.log("joueur " + userIndex + " annonce " + userBid);
       bid = userBid;
 
       // si c'est pas son tour, on ne fait rien
     } else {
+      console.log(
+        "annonce de " +
+          userIndex +
+          "refusee, c'est au tour de " +
+          game.activePlayerIndex
+      );
       return;
     }
 
@@ -177,6 +185,7 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
 
       // si c'est le tour d'un bot, il choisit son annonce
     } else {
+      await delay(waitingTime);
       // si tour à 1 carte -> annonce basée sur les cartes des autres
       if (game.cardsNb === 1) {
         let maxOpponentCard = 0;
@@ -206,6 +215,7 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
           bid === 0 ? bid++ : bid--;
         }
       }
+      console.log("joueur " + game.activePlayerIndex + " annonce " + bid);
     }
   }
   activePlayer.bid = bid;
@@ -216,12 +226,143 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
   };
   game.activePlayerIndex = nextAlivePlayer(game.activePlayerIndex, players);
 
-  game.step = "playerBid";
-  console.log("emit");
-  console.log(game);
   io.to(roomId).emit("gameUpdate", game);
-  await delay(5);
   playerBid(io, { roomId });
 }
 
-module.exports = { getGameState, startGame, dealCards, playerBid };
+async function playerPlay(io, { roomId, userIndex, userCard }) {
+  const game = games[roomId];
+  const players = game.players;
+  const activePlayer = players[game.activePlayerIndex];
+  let card;
+  let cardIndex;
+
+  console.log("playerPlay joueur " + game.activePlayerIndex);
+  console.log(userIndex != null ? "via clic" : "via algo");
+
+  // si fin du pli -> déterminer le gagnant
+  if (
+    game.activePlayerIndex === game.firstPlayer &&
+    game.board[game.activePlayerIndex] != null
+  ) {
+    game.step = "finishTrick";
+    io.to(roomId).emit("gameUpdate", game);
+    //finishTrick(io, { roomId });
+    console.log("finishTrick");
+    return;
+  }
+
+  // si déclenché par clic d'un joueur humain
+  if (userIndex != null) {
+    // check si c'est son tour (ajouter d'autres vérifs plus tard ?)
+    if (userIndex === game.activePlayerIndex) {
+      console.log("joueur " + userIndex + " joue " + userCard);
+      card = userCard;
+      cardIndex = activePlayer.hand.indexOf(card);
+
+      // si c'est pas son tour, on ne fait rien
+    } else {
+      console.log(
+        "carte de " +
+          userIndex +
+          "refusee, c'est au tour de " +
+          game.activePlayerIndex
+      );
+      return;
+    }
+
+    // si on arrive ici via l'algo (pas par un clic d'un joueur)
+  } else {
+    // si c'est au tour d'un joueur humain, on ne fait rien
+    if (activePlayer.id) {
+      console.log("en attente de " + activePlayer.name);
+      return;
+
+      // si c'est le tour d'un bot, il choisit sa carte
+    } else {
+      await delay(waitingTime);
+      ////////////////////////////// LOGIQUE ICI (choix carte)
+
+      let biggestCardOnBoard = Math.max(...game.board, 0);
+      let needsToScore = activePlayer.tricks < activePlayer.bid;
+      let isLastPlayer =
+        nextAlivePlayer(game.activePlayerIndex, players) === game.firstPlayer;
+      let canWinTrick = activePlayer.hand.at(-1) > biggestCardOnBoard;
+      let nextPlayersDontNeedToScore = !players
+        .map(
+          (p, i) =>
+            i !== game.activePlayerIndex &&
+            p.health > 0 &&
+            game.board[i] === null &&
+            p.tricks < p.bid
+        )
+        .includes(true);
+      console.log(nextPlayersDontNeedToScore);
+
+      if (!needsToScore) {
+        // pas de pli à faire -> joue sa plus grande carte perdante
+        cardIndex = activePlayer.hand.findLastIndex(
+          (c) => c < biggestCardOnBoard
+        );
+        if (!isLastPlayer && cardIndex === -1) {
+          // si pas de carte perdante
+          // dernier joueur -> plus grande carte
+          // pas dernier joueur -> plus petite carte
+          cardIndex = 0;
+        }
+      } else {
+        // encore au moins un pli à faire
+        if (nextPlayersDontNeedToScore && canWinTrick) {
+          // dernier joueur et peut gagner
+          if (activePlayer.bid - activePlayer.tricks >= 2) {
+            // doit faire plus d'un pli -> plus petite carte gagnante
+            cardIndex = activePlayer.hand.findIndex(
+              (c) => c > biggestCardOnBoard
+            );
+          } else {
+            // doit faire un seul pli -> plus grande carte
+            cardIndex = -1;
+          }
+        } else {
+          // pas dernier joueur ou peut pas gagner -> plus petite carte
+          cardIndex = 0;
+        }
+      }
+      card = activePlayer.hand.at(cardIndex);
+
+      // si carte choisie = excuse
+      if (card === 23) {
+        if (!needsToScore) {
+          // si a fait ses plis -> excuse vaut 0
+          card = 0;
+        } else {
+          if (activePlayer.hand.at(-2) > biggestCardOnBoard) {
+            // si on peut gagner sans jouer l'excuse, on évite de jouer l'excuse
+            cardIndex = -2;
+            card = activePlayer.hand.at(-2);
+          } else {
+            // si a pas fait tous ses plis -> excuse vaut 22
+            card = 22;
+          }
+        }
+      }
+
+      /////////////////////////////////
+
+      console.log("joueur " + game.activePlayerIndex + " joue " + card);
+    }
+  }
+  game.board[game.activePlayerIndex] = card;
+  activePlayer.hand.splice(cardIndex, 1);
+  game.previousAction = {
+    step: "playerPlay",
+    player: game.activePlayerIndex,
+    value: card,
+  };
+  game.activePlayerIndex = nextAlivePlayer(game.activePlayerIndex, players);
+
+  io.to(roomId).emit("gameUpdate", game);
+  playerPlay(io, { roomId });
+}
+
+module.exports = { getGameState, startGame, dealCards, playerBid, playerPlay };

@@ -72,8 +72,11 @@ export default function Multi() {
 
   const myIndex = game?.players.findIndex((p) => p.id === user._id);
   const offset = (index) => (index - myIndex + 4) % 4;
+
   const showBid =
-    game?.activePlayerIndex === myIndex && game?.step === "playerBid";
+    game?.activePlayerIndex === myIndex &&
+    game?.step === "playerBid" &&
+    game?.players[myIndex].bid == null;
 
   useEffect(() => {
     if (!socket) return;
@@ -98,8 +101,28 @@ export default function Multi() {
     socket.emit("playerBid", bidData);
   };
 
-  const handleCardClick = (myCard) => {};
-  const handleFoolClick = (myCard) => {};
+  const handleCardClick = (myCard) => {
+    console.log("cardClick");
+    if (myCard === 23) {
+      setAskFool(true);
+    } else {
+      playMyCard(myCard);
+    }
+  };
+  const handleFoolClick = (myCard) => {
+    playMyCard(myCard);
+  };
+
+  const playMyCard = (myCard) => {
+    setAskFool(false);
+    const cardData = {
+      roomId: game.roomId,
+      userIndex: myIndex,
+      userCard: myCard,
+    };
+    console.log(cardData);
+    socket.emit("playerPlay", cardData);
+  };
 
   console.log(game);
 
@@ -127,7 +150,7 @@ export default function Multi() {
                       className={`scores${game.activePlayerIndex === index ? " active-player" : ""}`}
                     >
                       <strong>
-                        {player.name} {game.dealer === index && "♟️"}
+                        {player.name} #{index} {game.dealer === index && "♟️"}
                       </strong>
                       <div>{player.health} ❤️</div>
                       <div>
@@ -144,10 +167,12 @@ export default function Multi() {
                             offset(index) === 1 || offset(index) === 3
                           }
                           isVisible={
-                            (offset(index) === 0) !== (game.cardsNb === 1)
+                            (index === myIndex) !== (game.cardsNb === 1)
                           }
                           isClickable={
-                            offset(index) === 0 && game.activePlayerIndex === 0
+                            index === myIndex &&
+                            game.activePlayerIndex === myIndex &&
+                            game.step === "playerPlay"
                           }
                           value={card}
                           handleCardClick={handleCardClick}
@@ -168,7 +193,10 @@ export default function Multi() {
               {game.board.map(
                 (card, index) =>
                   card != null && (
-                    <div className={position[index]} key={index}>
+                    <div
+                      className={position[offset(index)]}
+                      key={offset(index)}
+                    >
                       <Card isVisible={true} isClickable={false} value={card} />
                     </div>
                   )

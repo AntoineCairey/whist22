@@ -1,4 +1,9 @@
-const { getGameState, startGame, playerBid } = require("./gameController");
+const {
+  getGameState,
+  startGame,
+  playerBid,
+  playerPlay,
+} = require("./gameController");
 const {
   getRooms,
   createRoom,
@@ -12,6 +17,7 @@ function handleSocketConnection(io, socket) {
     console.log("Client déconnecté : " + socket.id);
   });
 
+  // room events
   socket.on("getRooms", () => getRooms(io, socket));
   socket.on("createRoom", (data) => createRoom(io, socket, data));
   socket.on("joinRoom", (data) => joinRoom(io, socket, data));
@@ -21,6 +27,7 @@ function handleSocketConnection(io, socket) {
   socket.on("getGameState", (data) => getGameState(socket, data));
   socket.on("startGame", (data) => startGame(io, data));
   socket.on("playerBid", (data) => playerBid(io, data));
+  socket.on("playerPlay", (data) => playerPlay(io, data));
 }
 
 module.exports = { handleSocketConnection };
