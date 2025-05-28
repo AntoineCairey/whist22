@@ -1,12 +1,13 @@
 const { rooms } = require("./roomController");
 
 const games = {};
-const waitingTime = 3;
+const waitingTime = 2;
+const startCardsNb = 5;
 
 const gameInit = {
   roomId: "",
   round: 1,
-  cardsNb: 5,
+  cardsNb: startCardsNb,
   step: "startGame",
   activePlayerIndex: 1, // index du joueur actif
   dealer: 0, // id du donneur
@@ -247,8 +248,7 @@ async function playerPlay(io, { roomId, userIndex, userCard }) {
   ) {
     game.step = "finishTrick";
     io.to(roomId).emit("gameUpdate", game);
-    //finishTrick(io, { roomId });
-    console.log("finishTrick");
+    finishTrick(io, roomId);
     return;
   }
 
@@ -281,7 +281,6 @@ async function playerPlay(io, { roomId, userIndex, userCard }) {
       // si c'est le tour d'un bot, il choisit sa carte
     } else {
       await delay(waitingTime);
-      ////////////////////////////// LOGIQUE ICI (choix carte)
 
       let biggestCardOnBoard = Math.max(...game.board, 0);
       let needsToScore = activePlayer.tricks < activePlayer.bid;
@@ -365,4 +364,74 @@ async function playerPlay(io, { roomId, userIndex, userCard }) {
   playerPlay(io, { roomId });
 }
 
-module.exports = { getGameState, startGame, dealCards, playerBid, playerPlay };
+async function finishTrick(io, roomId) {
+  const game = games[roomId];
+  const players = game.players;
+  const activePlayer = players[game.activePlayerIndex];
+
+  const winner = game.board.indexOf(Math.max(...game.board));
+  console.log("finishTrick, winner : " + winner);
+
+  players[winner].tricks++;
+  game.previousAction = {
+    step: "finishTrick",
+    player: winner,
+    value: null,
+  };
+  await delay(waitingTime);
+  if (activePlayer.hand.length === 0) {
+    game.step = "finishRound";
+    io.to(roomId).emit("gameUpdate", game);
+    finishRound(io, roomId);
+  } else {
+    game.board = Array(4).fill(null);
+    game.firstPlayer = winner;
+    game.activePlayerIndex = winner;
+    game.step = "playerPlay";
+    io.to(roomId).emit("gameUpdate", game);
+    playerPlay(io, { roomId });
+  }
+}
+
+async function finishRound(io, roomId) {
+  const game = games[roomId];
+  const players = game.players;
+  const activePlayer = players[game.activePlayerIndex];
+
+  console.log("finishRound");
+
+  for (let player of players) {
+    console.log("finish loop");
+    if (player.health > 0) {
+      const damage = Math.abs(player.bid - player.tricks);
+      if (damage > 0) {
+        player.health = Math.max(player.health - damage, 0);
+        console.log(player.name + " perd " + damage + " vies");
+        if (player.health === 0) {
+          player.elimTurn = game.round;
+          console.log(player.name + "est éliminé");
+        }
+      }
+    }
+  }
+
+  await delay(5);
+
+  // si partie finie (1 gagnant ou tous les vrais joueurs éliminés)
+  const alivePlayers = players.filter((p) => p.health > 0);
+  if (
+    alivePlayers.length <= 1 ||
+    alivePlayers.filter((p) => p.id != null).length === 0
+  ) {
+    // aller sur la page score ?
+    console.log("FINITO");
+  } else {
+    game.round++;
+    game.cardsNb = 5 - ((game.round - 1 + (5 - startCardsNb)) % 5);
+    game.step = "dealCards";
+    io.to(roomId).emit("gameUpdate", game);
+    dealCards(io, roomId);
+  }
+}
+
+module.exports = { getGameState, startGame, playerBid, playerPlay };
