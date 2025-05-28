@@ -10,7 +10,7 @@ export default function Multi() {
     round: 1,
     cardsNb: 5,
     step: "startGame",
-    activePlayer: 1, // index du joueur actif
+    activePlayerIndex: 1, // index du joueur actif
     dealer: 0, // id du donneur
     board: [null, null, null, null], // null si pas encore joué ou éliminé
     previousTrick: [],
@@ -58,8 +58,8 @@ export default function Multi() {
     ],
   }; */
 
-  let game = useLoaderData();
-  //const [game, setGame] = useState(initialGame);
+  //let game = useLoaderData();
+  const [game, setGame] = useState(useLoaderData());
   const [askBid, setAskBid] = useState(false);
   const [askFool, setAskFool] = useState(false);
 
@@ -72,10 +72,15 @@ export default function Multi() {
 
   const myIndex = game?.players.findIndex((p) => p.id === user._id);
   const offset = (index) => (index - myIndex + 4) % 4;
+  const showBid =
+    game?.activePlayerIndex === myIndex && game?.step === "playerBid";
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("gameUpdate", (gameData) => (game = gameData));
+    socket.on("gameUpdate", (gameData) => {
+      setGame(gameData);
+      console.log(gameData);
+    });
     return () => socket.off("gameUpdate");
   }, [socket]);
 
@@ -83,7 +88,16 @@ export default function Multi() {
     return arr.reduce((acc, curr) => acc + curr, 0);
   };
 
-  const handleBidClick = (myBid) => {};
+  const handleBidClick = (myBid) => {
+    const bidData = {
+      roomId: game.roomId,
+      userIndex: myIndex,
+      userBid: myBid,
+    };
+    console.log(bidData);
+    socket.emit("playerBid", bidData);
+  };
+
   const handleCardClick = (myCard) => {};
   const handleFoolClick = (myCard) => {};
 
@@ -110,7 +124,7 @@ export default function Multi() {
                 {player.health > 0 ? (
                   <>
                     <div
-                      className={`scores${game.activePlayer === index ? " active-player" : ""}`}
+                      className={`scores${game.activePlayerIndex === index ? " active-player" : ""}`}
                     >
                       <strong>
                         {player.name} {game.dealer === index && "♟️"}
@@ -133,7 +147,7 @@ export default function Multi() {
                             (offset(index) === 0) !== (game.cardsNb === 1)
                           }
                           isClickable={
-                            offset(index) === 0 && game.activePlayer === 0
+                            offset(index) === 0 && game.activePlayerIndex === 0
                           }
                           value={card}
                           handleCardClick={handleCardClick}
@@ -167,7 +181,7 @@ export default function Multi() {
               </div>
             )} */}
 
-            {askBid && (
+            {showBid && (
               <div className="modal-back">
                 <div className="modal">
                   <h3>Votre mise</h3>
