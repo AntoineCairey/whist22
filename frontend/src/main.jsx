@@ -18,6 +18,7 @@ import Ranking from "./pages/Ranking.jsx";
 import Lobby from "./pages/Lobby.jsx";
 import Multi from "./pages/Multi.jsx";
 import SocketLayout from "./components/SocketLayout.jsx";
+import ScoreMulti from "./pages/ScoreMulti.jsx";
 
 // loader.js
 export function gameLoader({ params }) {
@@ -56,6 +57,12 @@ const router = createBrowserRouter([
       {
         path: "/score",
         element: <Score />,
+      },
+      {
+        path: "/score-multi",
+        element: <ScoreMulti />,
+        loader: async () =>
+          navigator.onLine ? (await api.get("/users/me/games")).data[0] : [],
       },
       {
         path: "/rules",

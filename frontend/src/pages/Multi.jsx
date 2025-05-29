@@ -70,7 +70,7 @@ export default function Multi() {
   const position = ["bottom", "left", "top", "right"];
   const playSteps = ["playerPlay", "finishTrick", "finishRound"];
 
-  const myIndex = game?.players.findIndex((p) => p.id === user._id);
+  const myIndex = game?.players.findIndex((p) => p.id === user?._id);
   const offset = (index) => (index - myIndex + 4) % 4;
 
   const showBid =
@@ -84,6 +84,7 @@ export default function Multi() {
       setGame(gameData);
       console.log(gameData);
     });
+    socket.on("endOfGame", () => navigate("/score-multi"));
     return () => socket.off("gameUpdate");
   }, [socket]);
 

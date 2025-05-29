@@ -1,8 +1,12 @@
+const { createGameDb } = require("../managers/gameManager");
+const { calcMatchPoints } = require("../scripts/calcMatchPoints");
+
 const { rooms } = require("./roomController");
 
 const games = {};
 const waitingTime = 2;
-const startCardsNb = 5;
+const startCardsNb = 3;
+const startHealth = 1;
 
 const gameInit = {
   roomId: "",
@@ -21,7 +25,7 @@ const gameInit = {
 const playerInit = {
   id: null,
   name: null,
-  health: 3,
+  health: startHealth,
   bid: null,
   tricks: null,
   hand: null,
@@ -52,14 +56,6 @@ function sumArray(arr) {
   return arr.reduce((acc, curr) => acc + curr, 0);
 }
 
-/* 
-ajouter les bots
-définir un ordre aléatoire
-setup état initial
-...
-emit ?
-lancer distribution
- */
 async function startGame(io, roomId) {
   const game = { ...gameInit };
   game.roomId = roomId;
@@ -90,14 +86,6 @@ async function startGame(io, roomId) {
 }
 
 async function dealCards(io, roomId) {
-  /* 
-  next dealer
-  init board, bids, tricks...
-  draw cards
-  emit
-  await delay(1);
-  launch bids
-  */
   const game = games[roomId];
   const players = game.players;
   console.log("dealCards");
@@ -400,7 +388,7 @@ async function finishRound(io, roomId) {
 
   console.log("finishRound");
 
-  for (let player of players) {
+  players.forEach(async (player, index) => {
     console.log("finish loop");
     if (player.health > 0) {
       const damage = Math.abs(player.bid - player.tricks);
@@ -409,11 +397,23 @@ async function finishRound(io, roomId) {
         console.log(player.name + " perd " + damage + " vies");
         if (player.health === 0) {
           player.elimTurn = game.round;
-          console.log(player.name + "est éliminé");
+          console.log(player.name + " est éliminé");
+          if (player.id) {
+            // TODO
+            // déplacer ce calcul après qu'on ait retiré les vies à tous les joueurs
+            const { isVictory, totalPoints } = calcMatchPoints(players, index);
+            const newGame = {
+              userId: player.id,
+              isVictory,
+              points: totalPoints,
+              score: null,
+            };
+            await createGameDb(newGame);
+          }
         }
       }
     }
-  }
+  });
 
   await delay(5);
 
@@ -423,8 +423,21 @@ async function finishRound(io, roomId) {
     alivePlayers.length <= 1 ||
     alivePlayers.filter((p) => p.id != null).length === 0
   ) {
-    // aller sur la page score ?
     console.log("FINITO");
+    // si joueur humain gagne, enregistrer son score
+    // puis aller sur la page score
+    if (alivePlayers[0].id) {
+      const winnerIndex = players.findIndex((p) => p.id === alivePlayers[0].id);
+      const { isVictory, totalPoints } = calcMatchPoints(players, winnerIndex);
+      const newGame = {
+        userId: alivePlayers[0].id,
+        isVictory,
+        points: totalPoints,
+        score: null,
+      };
+      await createGameDb(newGame);
+    }
+    io.to(roomId).emit("endOfGame");
   } else {
     game.round++;
     game.cardsNb = 5 - ((game.round - 1 + (5 - startCardsNb)) % 5);

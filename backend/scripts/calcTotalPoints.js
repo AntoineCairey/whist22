@@ -6,7 +6,7 @@ const victoryLifeBonus = 50;
 const defeatBase = -20;
 const defeatLifeMalus = -10;
 
-const computePoints = async () => {
+const calcTotalPoints = async () => {
   const client = new MongoClient(process.env.MONGO_URI);
   try {
     await client.connect();
@@ -69,4 +69,4 @@ const computePoints = async () => {
   }
 };
 
-computePoints();
+calcTotalPoints();
