@@ -334,8 +334,6 @@ async function playerPlay(io, { roomId, userIndex, userCard }) {
         }
       }
 
-      /////////////////////////////////
-
       console.log("joueur " + game.activePlayerIndex + " joue " + card);
     }
   }
@@ -388,7 +386,8 @@ async function finishRound(io, roomId) {
 
   console.log("finishRound");
 
-  players.forEach(async (player, index) => {
+  // calculer vies perdues et joueurs éliminés
+  players.forEach((player, index) => {
     console.log("finish loop");
     if (player.health > 0) {
       const damage = Math.abs(player.bid - player.tricks);
@@ -398,26 +397,28 @@ async function finishRound(io, roomId) {
         if (player.health === 0) {
           player.elimTurn = game.round;
           console.log(player.name + " est éliminé");
-          if (player.id) {
-            // TODO
-            // déplacer ce calcul après qu'on ait retiré les vies à tous les joueurs
-            const { isVictory, totalPoints } = calcMatchPoints(players, index);
-            const newGame = {
-              userId: player.id,
-              isVictory,
-              points: totalPoints,
-              score: null,
-            };
-            await createGameDb(newGame);
-          }
         }
       }
     }
   });
 
+  // enregistrer scores joueurs humains éliminés
+  players
+    .filter((p) => p.elimTurn === game.round && p.id)
+    .forEach(async (player, index) => {
+      const { isVictory, totalPoints } = calcMatchPoints(players, index);
+      const newGame = {
+        userId: player.id,
+        isVictory,
+        points: totalPoints,
+        score: null,
+      };
+      await createGameDb(newGame);
+    });
+
   await delay(5);
 
-  // si partie finie (1 gagnant ou tous les vrais joueurs éliminés)
+  // si partie finie (1 gagnant ou tous les joueurs humains éliminés)
   const alivePlayers = players.filter((p) => p.health > 0);
   if (
     alivePlayers.length <= 1 ||
@@ -426,9 +427,7 @@ async function finishRound(io, roomId) {
     console.log("FINITO");
     // si joueur humain gagne, enregistrer son score
     // puis aller sur la page score
-
-    // TODO : gérer cas où tout le monde est éliminé
-    if (alivePlayers[0].id) {
+    if (alivePlayers[0] && alivePlayers[0].id) {
       const winnerIndex = players.findIndex((p) => p.id === alivePlayers[0].id);
       const { isVictory, totalPoints } = calcMatchPoints(players, winnerIndex);
       const newGame = {

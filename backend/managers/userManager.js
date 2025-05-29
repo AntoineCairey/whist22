@@ -58,8 +58,8 @@ const createUser = async (req, res) => {
       const result = await db.collection("users").insertOne(newUser);
       const token = jwt.sign(
         { userId: result.insertedId },
-        process.env.APP_SECRET,
-        { expiresIn: "1h" }
+        process.env.APP_SECRET
+        /* , { expiresIn: "1h" } */
       );
       res.status(201).json({ token });
     }
@@ -122,9 +122,11 @@ const login = async (req, res) => {
       if (!isPasswordValid) {
         res.status(401).json({ error: "Invalid password" });
       } else {
-        const token = jwt.sign({ userId: user._id }, process.env.APP_SECRET, {
-          expiresIn: "1h",
-        });
+        const token = jwt.sign(
+          { userId: user._id },
+          process.env.APP_SECRET
+          /* , { expiresIn: "1h"} */
+        );
         res.status(200).json({ token });
       }
     }
