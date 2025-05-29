@@ -27,10 +27,10 @@ export default function Lobby() {
 
     socket.emit("getRooms");
 
-    socket.on("roomsUpdate", (rooms) => {
+    socket.on("roomsUpdate", (data) => {
       console.log("Liste des rooms mise à jour");
-      console.log(rooms);
-      setRooms(rooms);
+      console.log(data);
+      setRooms(data);
     });
 
     socket.on("gameStarted", (roomId) => {
@@ -54,14 +54,19 @@ export default function Lobby() {
         <i>Pas de table disponible actuellement, crée-en une</i>
       )}
       {Object.entries(rooms).map(([roomId, players]) => (
-        <div key={roomId} className="table">
-          <div>{players.map((p) => p.name).join(", ")}</div>
+        <div
+          key={roomId}
+          className={`table${roomId === myRoom ? " mine" : ""}`}
+        >
+          {/* <div>Table #{roomId}</div> */}
+          <div>Joueurs : {players.map((p) => p.name).join(", ")}</div>
           <div>{4 - players.length} places disponibles</div>
-          {roomId !== myRoom ? (
+          {myRoom === undefined && (
             <button onClick={() => socket.emit("joinRoom", { roomId, player })}>
               Rejoindre
             </button>
-          ) : (
+          )}
+          {roomId === myRoom && (
             <button
               onClick={() => socket.emit("leaveRoom", { roomId, player })}
             >

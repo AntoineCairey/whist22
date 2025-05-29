@@ -84,7 +84,10 @@ export default function Multi() {
       setGame(gameData);
       console.log(gameData);
     });
-    socket.on("endOfGame", () => navigate("/score-multi"));
+    socket.on("endOfGame", async () => {
+      await getUserInfos();
+      navigate("/score-multi");
+    });
     return () => socket.off("gameUpdate");
   }, [socket]);
 
@@ -220,7 +223,7 @@ export default function Multi() {
                         key={index}
                         onClick={() => handleBidClick(index)}
                         disabled={
-                          game.dealer === 0 &&
+                          game.dealer === myIndex &&
                           sumArray(game.players.map((p) => p.bid)) + index ===
                             game.cardsNb &&
                           game.cardsNb !== 1

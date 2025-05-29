@@ -426,6 +426,8 @@ async function finishRound(io, roomId) {
     console.log("FINITO");
     // si joueur humain gagne, enregistrer son score
     // puis aller sur la page score
+
+    // TODO : gérer cas où tout le monde est éliminé
     if (alivePlayers[0].id) {
       const winnerIndex = players.findIndex((p) => p.id === alivePlayers[0].id);
       const { isVictory, totalPoints } = calcMatchPoints(players, winnerIndex);

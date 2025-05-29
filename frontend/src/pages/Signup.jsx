@@ -24,7 +24,9 @@ export default function Signup() {
       setError("Les mots de passe doivent être identiques");
     } else {
       try {
-        const response = await api.post("/signup", formData);
+        const formDataCp = {...formData};
+        delete formDataCp.password2;
+        const response = await api.post("/signup", formDataCp);
         const token = response.data.token;
         localStorage.setItem("token", token);
         getUserInfos();

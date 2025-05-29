@@ -369,4 +369,8 @@ table {
       margin: 10px;
     }
   }
+
+  .mine {
+    background-color: rgb(54, 168, 104);
+  }
 }
