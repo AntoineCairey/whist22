@@ -2,6 +2,7 @@ const { createGameDb } = require("../managers/gameManager");
 const { calcMatchPoints } = require("../scripts/calcMatchPoints");
 
 const { rooms } = require("./roomController");
+const namesList = require("../data/names.json");
 
 const games = {};
 const waitingTime = 2;
@@ -52,6 +53,10 @@ function nextAlivePlayer(playerIndex, players) {
   return p;
 }
 
+function s(value) {
+  return value >= 2 ? "s" : "";
+}
+
 function sumArray(arr) {
   return arr.reduce((acc, curr) => acc + curr, 0);
 }
@@ -61,6 +66,8 @@ async function startGame(io, roomId) {
   game.roomId = roomId;
   game.players = [];
   game.board = [];
+
+  const botNames = namesList.sort(() => 0.5 - Math.random());
 
   console.log("startGame");
   console.log(rooms[roomId]);
@@ -72,7 +79,7 @@ async function startGame(io, roomId) {
       playerData.id = roomPlayer.id;
       playerData.name = roomPlayer.name;
     } else {
-      playerData.name = "Bot";
+      playerData.name = botNames.splice(0, 1);
     }
     game.players[i] = playerData;
   }
@@ -94,11 +101,13 @@ async function dealCards(io, roomId) {
   game.firstPlayer = nextAlivePlayer(game.dealer, players);
   game.activePlayerIndex = game.firstPlayer;
 
-  game.previousAction = {
+  /* game.previousAction = {
     step: "dealCards",
     player: game.dealer,
     value: game.cardsNb,
-  };
+  }; */
+  game.infoText = `${players[game.dealer].name} distribue ${game.cardsNb} carte${s(game.cardsNb)}`;
+
   game.board = Array(4).fill(null);
 
   const deck = Array.from({ length: 21 }, (_, index) => index + 1);
@@ -170,6 +179,8 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
     // si c'est au tour d'un joueur humain, on ne fait rien
     if (activePlayer.id) {
       console.log("en attente de " + activePlayer.name);
+      game.infoText += `\nA ${activePlayer.name} de parler`;
+      io.to(roomId).emit("gameUpdate", game);
       return;
 
       // si c'est le tour d'un bot, il choisit son annonce
@@ -208,11 +219,12 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
     }
   }
   activePlayer.bid = bid;
-  game.previousAction = {
+  /* game.previousAction = {
     step: "playerBid",
     player: game.activePlayerIndex,
     value: bid,
-  };
+  }; */
+  game.infoText = `${activePlayer.name} annonce ${bid} pli${s(bid)}`;
   game.activePlayerIndex = nextAlivePlayer(game.activePlayerIndex, players);
 
   io.to(roomId).emit("gameUpdate", game);
@@ -264,6 +276,8 @@ async function playerPlay(io, { roomId, userIndex, userCard }) {
     // si c'est au tour d'un joueur humain, on ne fait rien
     if (activePlayer.id) {
       console.log("en attente de " + activePlayer.name);
+      game.infoText += `\nA ${activePlayer.name} de jouer`;
+      io.to(roomId).emit("gameUpdate", game);
       return;
 
       // si c'est le tour d'un bot, il choisit sa carte
@@ -339,11 +353,12 @@ async function playerPlay(io, { roomId, userIndex, userCard }) {
   }
   game.board[game.activePlayerIndex] = card;
   activePlayer.hand.splice(cardIndex, 1);
-  game.previousAction = {
+  /* game.previousAction = {
     step: "playerPlay",
     player: game.activePlayerIndex,
     value: card,
-  };
+  }; */
+  game.infoText = `${activePlayer.name} joue ${card}`;
   game.activePlayerIndex = nextAlivePlayer(game.activePlayerIndex, players);
 
   io.to(roomId).emit("gameUpdate", game);
@@ -359,12 +374,14 @@ async function finishTrick(io, roomId) {
   console.log("finishTrick, winner : " + winner);
 
   players[winner].tricks++;
-  game.previousAction = {
+  /* game.previousAction = {
     step: "finishTrick",
     player: winner,
     value: null,
-  };
+  }; */
+  game.infoText = `${players[winner].name} gagne le pli`;
   await delay(waitingTime);
+
   if (activePlayer.hand.length === 0) {
     game.step = "finishRound";
     io.to(roomId).emit("gameUpdate", game);
@@ -385,6 +402,7 @@ async function finishRound(io, roomId) {
   const activePlayer = players[game.activePlayerIndex];
 
   console.log("finishRound");
+  game.infoText = "Fin de la manche";
 
   // calculer vies perdues et joueurs éliminés
   players.forEach((player, index) => {
@@ -393,9 +411,11 @@ async function finishRound(io, roomId) {
       const damage = Math.abs(player.bid - player.tricks);
       if (damage > 0) {
         player.health = Math.max(player.health - damage, 0);
+        game.infoText += `\n${`${player.name} perd`} ${damage} vie${s(damage)}`;
         console.log(player.name + " perd " + damage + " vies");
         if (player.health === 0) {
           player.elimTurn = game.round;
+          game.infoText += " → éliminé 💀";
           console.log(player.name + " est éliminé");
         }
       }
@@ -403,9 +423,8 @@ async function finishRound(io, roomId) {
   });
 
   // enregistrer scores joueurs humains éliminés
-  players
-    .filter((p) => p.elimTurn === game.round && p.id)
-    .forEach(async (player, index) => {
+  players.forEach(async (player, index) => {
+    if (player.elimTurn === game.round && player.id) {
       const { isVictory, totalPoints } = calcMatchPoints(players, index);
       const newGame = {
         userId: player.id,
@@ -414,9 +433,8 @@ async function finishRound(io, roomId) {
         score: null,
       };
       await createGameDb(newGame);
-    });
-
-  await delay(5);
+    }
+  });
 
   // si partie finie (1 gagnant ou tous les joueurs humains éliminés)
   const alivePlayers = players.filter((p) => p.health > 0);
@@ -438,12 +456,14 @@ async function finishRound(io, roomId) {
       };
       await createGameDb(newGame);
     }
+    await delay(5);
     io.to(roomId).emit("endOfGame");
   } else {
     game.round++;
     game.cardsNb = 5 - ((game.round - 1 + (5 - startCardsNb)) % 5);
     game.step = "dealCards";
     io.to(roomId).emit("gameUpdate", game);
+    await delay(5);
     dealCards(io, roomId);
   }
 }

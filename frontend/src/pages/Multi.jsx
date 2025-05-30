@@ -60,8 +60,8 @@ export default function Multi() {
 
   //let game = useLoaderData();
   const [game, setGame] = useState(useLoaderData());
-  const [askBid, setAskBid] = useState(false);
   const [askFool, setAskFool] = useState(false);
+  //const [message, setMessage] = useState(null);
 
   const socket = useSocket();
   const { user, getUserInfos } = useContext(AuthContext);
@@ -151,7 +151,7 @@ export default function Multi() {
                 {player.health > 0 ? (
                   <>
                     <div
-                      className={`scores${game.activePlayerIndex === index ? " active-player" : ""}`}
+                      className={`scores${game.activePlayerIndex === index && ["playerPlay", "playerBid"].includes(game.step) ? " active-player" : ""}`}
                     >
                       <strong>
                         {player.name} #{index} {game.dealer === index && "♟️"}
@@ -207,11 +207,11 @@ export default function Multi() {
               )}
             </div>
 
-            {/* {history && (
+            {game.infoText && (
               <div className="history">
-                <div>{history}</div>
+                <div>{game.infoText}</div>
               </div>
-            )} */}
+            )}
 
             {showBid && (
               <div className="modal-back">
