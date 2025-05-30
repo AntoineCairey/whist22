@@ -21,9 +21,10 @@ function handleSocketConnection(io, socket) {
       " / username : " +
       socket.username
   );
+
   socket.on("disconnect", () => {
     console.log("Client déconnecté : " + socket.id);
-    //leaveRooms(io, player);
+    leaveRooms(io, socket, socket.userId);
   });
 
   // room events

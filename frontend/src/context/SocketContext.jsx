@@ -11,12 +11,20 @@ export function SocketProvider() {
 
   useEffect(() => {
     if (!user) return;
-    console.log(user);
+
     const newSocket = io("http://localhost:3000", {
       auth: { userId: user._id, username: user.username },
     });
-    setSocket(newSocket);
+
+    const onConnect = () => {
+      console.log("Socket connected");
+      setSocket(newSocket);
+    };
+
+    newSocket.on("connect", onConnect);
+
     return () => {
+      newSocket.off("connect", onConnect);
       newSocket.disconnect();
     };
   }, [user?._id]);

@@ -11,9 +11,10 @@ export default function Lobby() {
 
   const player = { id: user?._id, name: user?.username };
   const myRoom = Object.keys(rooms).find((k) =>
-    rooms[k].find((p) => p.id === user?._id)
+    rooms[k].players.find((p) => p.id === user?._id)
   );
-  console.log(myRoom);
+  //console.log(rooms);
+  //console.log(myRoom);
 
   function handleBack() {
     if (myRoom !== undefined) {
@@ -21,16 +22,22 @@ export default function Lobby() {
     }
     navigate("/");
   }
-
   useEffect(() => {
+    console.log(socket);
     if (!socket) return;
 
     socket.emit("getRooms");
+    //console.log(socket);
 
     socket.on("roomsUpdate", (data) => {
+      //console.log(socket);
       console.log("Liste des rooms mise à jour");
       console.log(data);
-      setRooms(data);
+      const waitingRooms = Object.fromEntries(
+        Object.entries(data).filter(([k, v]) => v.status === "waiting")
+      );
+      console.log(waitingRooms);
+      setRooms(waitingRooms);
     });
 
     socket.on("gameStarted", (roomId) => {
@@ -53,7 +60,7 @@ export default function Lobby() {
       {Object.keys(rooms).length === 0 && (
         <i>Pas de table disponible actuellement, crée-en une</i>
       )}
-      {Object.entries(rooms).map(([roomId, players]) => (
+      {Object.entries(rooms).map(([roomId, { players }]) => (
         <div
           key={roomId}
           className={`table${roomId === myRoom ? " mine" : ""}`}

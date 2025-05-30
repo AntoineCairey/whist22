@@ -4,6 +4,8 @@ const rooms = {};
 const randomId = () => crypto.randomBytes(4).toString("hex");
 
 function getRooms(io, socket) {
+  //console.log("getRooms");
+  //console.log(JSON.stringify(rooms, null, 2));
   socket.emit("roomsUpdate", rooms);
 }
 
@@ -13,8 +15,9 @@ function createRoom(io, socket, player) {
     return;
   } */
   const roomId = randomId();
-  rooms[roomId] = [player];
+  rooms[roomId] = { players: [player], status: "waiting" };
   socket.join(roomId);
+  //console.log(JSON.stringify(rooms, null, 2));
   io.emit("roomsUpdate", rooms);
 }
 
@@ -24,27 +27,34 @@ function joinRoom(io, socket, { roomId, player }) {
     socket.emit("error", "Room does not exist");
     return;
   }
-  room.push(player);
+  room.players.push(player);
   socket.join(roomId);
+  //console.log(JSON.stringify(rooms, null, 2));
   io.emit("roomsUpdate", rooms);
 }
 
 function leaveRoom(io, socket, { roomId, player }) {
-  rooms[roomId] = rooms[roomId].filter((p) => p.id !== player.id);
+  const room = rooms[roomId];
+  if (!room) return;
+  room.players = room.players.filter((p) => p.id !== player.id);
   socket.leave(roomId);
-  if (rooms[roomId].length === 0) {
+  if (room.players.length === 0) {
     delete rooms[roomId];
   }
+  //console.log(JSON.stringify(rooms, null, 2));
   io.emit("roomsUpdate", rooms);
 }
 
-function leaveRooms(io, socket, player) {
-  Object.entries(rooms).forEach(([roomId, playersList]) => {
-    playersList = playersList.filter((p) => p.id !== player.id);
-    if (playersList.length === 0) {
+function leaveRooms(io, socket, userId) {
+  Object.entries(rooms).forEach(([roomId, { players }]) => {
+    const room = rooms[roomId];
+    room.players = players.filter((p) => p.id !== userId);
+    //socket.leave(roomId);
+    if (room.players.length === 0) {
       delete rooms[roomId];
     }
   });
+  //console.log(JSON.stringify(rooms, null, 2));
   io.emit("roomsUpdate", rooms);
 }
 

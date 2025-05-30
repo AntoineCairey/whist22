@@ -77,6 +77,14 @@ export default function Multi() {
     game?.step === "playerBid" &&
     game?.players[myIndex].bid == null;
 
+  function handleBack() {
+    socket.emit("leaveRoom", {
+      roomId,
+      player: { id: user?._id, name: user?.username },
+    });
+    navigate("/");
+  }
+
   useEffect(() => {
     if (!socket) return;
     socket.emit("getGameState", roomId);
@@ -138,7 +146,7 @@ export default function Multi() {
   ) : (
     <>
       <div className="info">
-        <button onClick={() => navigate("/")}>⬅️ Quitter</button>
+        <button onClick={handleBack}>⬅️ Quitter</button>
         <div>
           Manche {game.round} ({game.cardsNb}🃏)
         </div>

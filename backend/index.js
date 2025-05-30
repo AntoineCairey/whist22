@@ -5,6 +5,7 @@ const router = require("./router");
 const http = require("http");
 const { Server } = require("socket.io");
 const { handleSocketConnection } = require("./sockets/handlers");
+const { rooms, joinRoom } = require("./sockets/roomController");
 
 const app = express();
 const port = process.env.APP_PORT;
@@ -28,6 +29,23 @@ io.use((socket, next) => {
   }
   socket.userId = userId;
   socket.username = username;
+
+  console.log(JSON.stringify(rooms, null, 2));
+
+  // TODO : checker si ce userId a une room -> si oui le reconnecter
+
+  /* console.log(console.log(JSON.stringify(rooms, null, 2)));
+  const myRoom = Object.keys(rooms).find((k) =>
+    rooms[k].players.find((p) => p.id === userId)
+  );
+  console.log(myRoom);
+  if (myRoom) {
+    joinRoom(io, socket, {
+      roomId: myRoom,
+      player: { id: userId, name: username },
+    });
+  } */
+
   next();
 });
 

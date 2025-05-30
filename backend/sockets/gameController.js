@@ -67,13 +67,16 @@ async function startGame(io, roomId) {
   game.players = [];
   game.board = [];
 
+  rooms[roomId].status = "playing";
+  io.emit("roomsUpdate", rooms);
+
   const botNames = namesList.sort(() => 0.5 - Math.random());
 
   console.log("startGame");
   console.log(rooms[roomId]);
   for (i = 0; i < 4; i++) {
     const playerData = { ...playerInit };
-    const roomPlayer = rooms[roomId][i];
+    const roomPlayer = rooms[roomId].players[i];
     playerData.hand = [];
     if (roomPlayer) {
       playerData.id = roomPlayer.id;
@@ -457,6 +460,8 @@ async function finishRound(io, roomId) {
       await createGameDb(newGame);
     }
     await delay(5);
+    rooms[roomId].status = "waiting";
+    io.emit("roomsUpdate", rooms);
     io.to(roomId).emit("endOfGame");
   } else {
     game.round++;
