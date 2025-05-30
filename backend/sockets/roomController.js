@@ -38,6 +38,16 @@ function leaveRoom(io, socket, { roomId, player }) {
   io.emit("roomsUpdate", rooms);
 }
 
+function leaveRooms(io, socket, player) {
+  Object.entries(rooms).forEach(([roomId, playersList]) => {
+    playersList = playersList.filter((p) => p.id !== player.id);
+    if (playersList.length === 0) {
+      delete rooms[roomId];
+    }
+  });
+  io.emit("roomsUpdate", rooms);
+}
+
 /* function startGame(io, socket, { roomId, player }) {
   console.log("startGame");
   console.log(roomId);
@@ -45,4 +55,11 @@ function leaveRoom(io, socket, { roomId, player }) {
   //delete rooms[roomId];
 } */
 
-module.exports = { rooms, getRooms, createRoom, joinRoom, leaveRoom };
+module.exports = {
+  rooms,
+  getRooms,
+  createRoom,
+  joinRoom,
+  leaveRoom,
+  leaveRooms,
+};

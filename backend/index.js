@@ -19,6 +19,18 @@ app.use(cors());
 app.use(express.json());
 app.use("/", router);
 
+// middleware authentification socket
+io.use((socket, next) => {
+  console.log(socket.handshake.auth);
+  const { userId, username } = socket.handshake.auth;
+  if (!userId) {
+    return next(new Error("userId manquant"));
+  }
+  socket.userId = userId;
+  socket.username = username;
+  next();
+});
+
 io.on("connection", (socket) => {
   handleSocketConnection(io, socket);
 });

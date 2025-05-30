@@ -9,12 +9,21 @@ const {
   createRoom,
   joinRoom,
   leaveRoom,
+  leaveRooms,
 } = require("./roomController");
 
 function handleSocketConnection(io, socket) {
-  console.log("Client connecté : " + socket.id);
+  console.log(
+    "Client connecté, socketId : " +
+      socket.id +
+      " / userId : " +
+      socket.userId +
+      " / username : " +
+      socket.username
+  );
   socket.on("disconnect", () => {
     console.log("Client déconnecté : " + socket.id);
+    //leaveRooms(io, player);
   });
 
   // room events

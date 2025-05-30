@@ -67,14 +67,14 @@ export default function ScoreMulti() {
         </>
       )}
       <br />
-      <button onClick={() => navigate("/")}>🏠 Menu</button>
+      <button onClick={() => navigate("/lobby")}>🎮 Lobby</button>
     </>
   ) : (
     <>
       <br />
       <div>Pas de score</div>
       <br />
-      <button onClick={() => navigate("/")}>🏠 Menu</button>
+      <button onClick={() => navigate("/lobby")}>🎮 Lobby</button>
     </>
   );
 }

@@ -79,7 +79,7 @@ async function startGame(io, roomId) {
       playerData.id = roomPlayer.id;
       playerData.name = roomPlayer.name;
     } else {
-      playerData.name = botNames.splice(0, 1);
+      playerData.name = "🤖 " + botNames.splice(0, 1);
     }
     game.players[i] = playerData;
   }

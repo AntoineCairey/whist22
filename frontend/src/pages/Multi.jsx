@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Card from "../components/Card";
 import { useSocket } from "../context/SocketContext";
@@ -58,10 +58,9 @@ export default function Multi() {
     ],
   }; */
 
-  //let game = useLoaderData();
-  const [game, setGame] = useState(useLoaderData());
+  const roomId = useParams().roomId;
+  const [game, setGame] = useState(null);
   const [askFool, setAskFool] = useState(false);
-  //const [message, setMessage] = useState(null);
 
   const socket = useSocket();
   const { user, getUserInfos } = useContext(AuthContext);
@@ -80,6 +79,7 @@ export default function Multi() {
 
   useEffect(() => {
     if (!socket) return;
+    socket.emit("getGameState", roomId);
     socket.on("gameUpdate", (gameData) => {
       setGame(gameData);
       console.log(gameData);
@@ -88,7 +88,10 @@ export default function Multi() {
       await getUserInfos();
       navigate("/score-multi");
     });
-    return () => socket.off("gameUpdate");
+    return () => {
+      socket.off("gameUpdate");
+      socket.off("endOfGame");
+    };
   }, [socket]);
 
   const sumArray = (arr) => {
