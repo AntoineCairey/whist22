@@ -57,12 +57,6 @@ const router = createBrowserRouter([
         element: <Score />,
       },
       {
-        path: "/score-multi",
-        element: <ScoreMulti />,
-        loader: async () =>
-          navigator.onLine ? (await api.get("/users/me/games")).data[0] : [],
-      },
-      {
         path: "/rules",
         element: <Rules />,
       },
@@ -89,6 +83,14 @@ const router = createBrowserRouter([
             path: "/multi/:roomId",
             element: <Multi />,
             //loader: gameLoader,
+          },
+          {
+            path: "/score-multi",
+            element: <ScoreMulti />,
+            loader: async () =>
+              navigator.onLine
+                ? (await api.get("/users/me/games")).data[0]
+                : [],
           },
         ],
       },

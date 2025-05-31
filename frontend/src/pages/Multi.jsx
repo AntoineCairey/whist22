@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
+import { debounce } from "lodash";
 import { AuthContext } from "../context/AuthContext";
 import Card from "../components/Card";
 import { useSocket } from "../context/SocketContext";
@@ -77,8 +78,13 @@ export default function Multi() {
     game?.step === "playerBid" &&
     game?.players[myIndex].bid == null;
 
+  const emit = debounce((event, payload) => socket.emit(event, payload), 500, {
+    leading: true,
+    trailing: false,
+  });
+
   function handleBack() {
-    socket.emit("leaveRoom", {
+    emit("leaveRoom", {
       roomId,
       player: { id: user?._id, name: user?.username },
     });
@@ -87,7 +93,7 @@ export default function Multi() {
 
   useEffect(() => {
     if (!socket) return;
-    socket.emit("getGameState", roomId);
+    emit("getGameState", roomId);
     socket.on("gameUpdate", (gameData) => {
       setGame(gameData);
       console.log(gameData);
@@ -113,7 +119,8 @@ export default function Multi() {
       userBid: myBid,
     };
     console.log(bidData);
-    socket.emit("playerBid", bidData);
+
+    emit("playerBid", bidData);
   };
 
   const handleCardClick = (myCard) => {
@@ -136,7 +143,7 @@ export default function Multi() {
       userCard: myCard,
     };
     console.log(cardData);
-    socket.emit("playerPlay", cardData);
+    emit("playerPlay", cardData);
   };
 
   console.log(game);
@@ -165,7 +172,9 @@ export default function Multi() {
                       className={`scores${game.activePlayerIndex === index && ["playerPlay", "playerBid"].includes(game.step) ? " active-player" : ""}`}
                     >
                       <strong>
-                        {player.name} #{index} {game.dealer === index && "♟️"}
+                        {player.name}
+                        {/* #{index} */}
+                        {game.dealer === index && " ♟️"}
                       </strong>
                       <div>{player.health} ❤️</div>
                       <div>

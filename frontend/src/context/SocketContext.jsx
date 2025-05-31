@@ -12,7 +12,7 @@ export function SocketProvider() {
   useEffect(() => {
     if (!user) return;
 
-    const newSocket = io("http://localhost:3000", {
+    const newSocket = io(import.meta.env.VITE_BACKEND_URL, {
       auth: { userId: user._id, username: user.username },
     });
 

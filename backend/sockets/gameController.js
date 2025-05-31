@@ -6,8 +6,8 @@ const namesList = require("../data/names.json");
 
 const games = {};
 const waitingTime = 2;
-const startCardsNb = 3;
-const startHealth = 1;
+const startCardsNb = 5;
+const startHealth = 3;
 
 const gameInit = {
   roomId: "",
@@ -145,7 +145,7 @@ async function playerBid(io, { roomId, userIndex, userBid }) {
   const activePlayer = players[game.activePlayerIndex];
   let bid;
 
-  console.log("playerBid joueur " + game.activePlayerIndex);
+  console.log("playerBid joueur " + game.activePlayerIndex + " " + activePlayer.name);
   console.log(userIndex != null ? "via clic" : "via algo");
 
   // si fin des annonces -> début 1er pli
@@ -459,6 +459,7 @@ async function finishRound(io, roomId) {
       };
       await createGameDb(newGame);
     }
+    io.to(roomId).emit("gameUpdate", game);
     await delay(5);
     rooms[roomId].status = "waiting";
     io.emit("roomsUpdate", rooms);
