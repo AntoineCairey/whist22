@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { SocketProvider } from "./context/SocketContext";
 import "./App.css";
 
 import App from "./App.jsx";
@@ -14,6 +15,17 @@ import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import api from "./services/apiService.js";
 import Ranking from "./pages/Ranking.jsx";
+import Lobby from "./pages/Lobby.jsx";
+import Multi from "./pages/Multi.jsx";
+import ScoreMulti from "./pages/ScoreMulti.jsx";
+
+/* export function gameLoader({ params }) {
+  return new Promise((resolve, reject) => {
+    socket.emit("getGameState", params.roomId);
+    socket.once("gameUpdate", (data) => resolve(data));
+    setTimeout(() => reject(new Error("Pas de réponse du serveur")), 5000);
+  });
+} */
 
 const router = createBrowserRouter([
   {
@@ -59,6 +71,28 @@ const router = createBrowserRouter([
         element: <Ranking />,
         loader: async () =>
           navigator.onLine ? (await api.get("/bestusers")).data : [],
+      },
+      {
+        element: <SocketProvider />, // fournit le socket
+        children: [
+          {
+            path: "/lobby",
+            element: <Lobby />,
+          },
+          {
+            path: "/multi/:roomId",
+            element: <Multi />,
+            //loader: gameLoader,
+          },
+          {
+            path: "/score-multi",
+            element: <ScoreMulti />,
+            loader: async () =>
+              navigator.onLine
+                ? (await api.get("/users/me/games")).data[0]
+                : [],
+          },
+        ],
       },
     ],
   },

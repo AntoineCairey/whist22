@@ -78,9 +78,22 @@ const getGame = async (req, res) => {
   }
 };
 
+// TODO : séparer en 2 fonctions
+// une qui répond aux requêtes et une qui fait la modif en BDD
 const createGame = async (req, res) => {
   try {
     const newGame = req.body;
+    await createGameDb(newGame);
+
+    res.status(201).json({ insertedId: result1.insertedId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not create data" });
+  }
+};
+
+const createGameDb = async (newGame) => {
+  try {
     newGame.creationDate = new Date();
     newGame.userId = ObjectId.isValid(newGame.userId)
       ? ObjectId.createFromHexString(newGame.userId)
@@ -96,11 +109,8 @@ const createGame = async (req, res) => {
           { $inc: { points: newGame.points } }
         );
     }
-
-    res.status(201).json({ insertedId: result1.insertedId });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Could not create data" });
   }
 };
 
@@ -186,6 +196,7 @@ module.exports = {
   getGames,
   getGame,
   createGame,
+  createGameDb,
   updateGame,
   deleteGame,
   getGamesByUser,
