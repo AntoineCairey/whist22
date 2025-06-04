@@ -32,11 +32,9 @@ export default function Menu() {
 
       {navigator.onLine && (
         <>
-          {user && (
-            <button className="menu-button" onClick={() => navigate("/lobby")}>
-              🎮 Jouer en ligne
-            </button>
-          )}
+          <button className="menu-button" onClick={() => navigate("/lobby")}>
+            🎮 Jouer en ligne
+          </button>
 
           <button className="menu-button" onClick={() => navigate("/ranking")}>
             🏆 Classement général

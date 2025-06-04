@@ -18,6 +18,7 @@ import Ranking from "./pages/Ranking.jsx";
 import Lobby from "./pages/Lobby.jsx";
 import Multi from "./pages/Multi.jsx";
 import ScoreMulti from "./pages/ScoreMulti.jsx";
+import LobbyInfo from "./pages/LobbyInfo.jsx";
 
 /* export function gameLoader({ params }) {
   return new Promise((resolve, reject) => {
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
         element: <Ranking />,
         loader: async () =>
           navigator.onLine ? (await api.get("/bestusers")).data : [],
+      },
+      {
+        path: "lobby-info",
+        element: <LobbyInfo />,
       },
       {
         element: <SocketProvider />, // fournit le socket
